@@ -1,0 +1,80 @@
+# Valley Virtual Assistant - Git Ignore File
+
+# WordPress
+wp-config.php
+wp-content/uploads/
+wp-content/blogs.dir/
+wp-content/upgrade/
+wp-content/backup-db/
+wp-content/advanced-cache.php
+wp-content/wp-cache-config.php
+wp-content/cache/
+wp-content/cache/*
+*.log
+
+# Plugin specific
+config.local.php
+.env
+.env.local
+
+# IDE and Editor files
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+.DS_Store
+Thumbs.db
+
+# Node modules (if using build tools)
+node_modules/
+npm-debug.log
+yarn-error.log
+package-lock.json
+yarn.lock
+
+# Compiled assets (if using build tools)
+assets/dist/
+*.min.css
+*.min.js
+*.map
+
+# Temporary files
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Backup files
+*.bak
+*.backup
+*.old
+
+# Composer
+vendor/
+composer.lock
+composer.phar
+
+# Testing
+tests/_output/*
+codeception.yml
+
+# Debug
+debug.log
+error_log
+
+# Sensitive information (never commit!)
+*.key
+*.pem
+*.cert
+api-keys.txt
+secrets.php

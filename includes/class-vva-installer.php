@@ -120,7 +120,7 @@ class VVA_Installer {
             'vva_anthropic_api_key' => '',
             'vva_anthropic_model' => 'claude-3-5-sonnet-20240620',
             'vva_gemini_api_key' => '',
-            'vva_gemini_model' => 'gemini-1.5-pro',
+            'vva_gemini_model' => 'gemini-1.5-pro-latest',
             'vva_max_tokens' => 4096,
             'vva_temperature' => 0.7,
 

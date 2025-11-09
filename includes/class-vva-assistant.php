@@ -57,7 +57,7 @@ class VVA_Assistant {
 
         if ($this->provider === 'gemini') {
             $this->api_key = get_option('vva_gemini_api_key');
-            $this->model = get_option('vva_gemini_model', 'gemini-1.5-pro');
+            $this->model = get_option('vva_gemini_model', 'gemini-1.5-pro-latest');
         } else {
             $this->api_key = get_option('vva_anthropic_api_key');
             $this->model = get_option('vva_anthropic_model', 'claude-3-5-sonnet-20240620');

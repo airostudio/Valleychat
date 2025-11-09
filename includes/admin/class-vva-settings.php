@@ -228,13 +228,13 @@ class VVA_Settings {
                 </th>
                 <td>
                     <select id="vva_gemini_model" name="vva_gemini_model">
-                        <option value="gemini-1.5-pro" <?php selected(get_option('vva_gemini_model', 'gemini-1.5-pro'), 'gemini-1.5-pro'); ?>>
+                        <option value="gemini-1.5-pro-latest" <?php selected(get_option('vva_gemini_model', 'gemini-1.5-pro-latest'), 'gemini-1.5-pro-latest'); ?>>
                             Gemini 1.5 Pro (Recommended)
                         </option>
-                        <option value="gemini-1.5-flash" <?php selected(get_option('vva_gemini_model', 'gemini-1.5-pro'), 'gemini-1.5-flash'); ?>>
+                        <option value="gemini-1.5-flash-latest" <?php selected(get_option('vva_gemini_model', 'gemini-1.5-pro-latest'), 'gemini-1.5-flash-latest'); ?>>
                             Gemini 1.5 Flash (Fastest)
                         </option>
-                        <option value="gemini-pro" <?php selected(get_option('vva_gemini_model', 'gemini-1.5-pro'), 'gemini-pro'); ?>>
+                        <option value="gemini-pro" <?php selected(get_option('vva_gemini_model', 'gemini-1.5-pro-latest'), 'gemini-pro'); ?>>
                             Gemini Pro
                         </option>
                     </select>

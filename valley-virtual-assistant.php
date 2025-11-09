@@ -78,6 +78,7 @@ final class Valley_Virtual_Assistant {
         require_once VVA_PLUGIN_DIR . 'includes/class-vva-ajax.php';
         require_once VVA_PLUGIN_DIR . 'includes/class-vva-api.php';
         require_once VVA_PLUGIN_DIR . 'includes/class-vva-assistant.php';
+        require_once VVA_PLUGIN_DIR . 'includes/admin/class-vva-analytics.php';
         require_once VVA_PLUGIN_DIR . 'includes/class-vva-woocommerce.php';
         require_once VVA_PLUGIN_DIR . 'includes/class-vva-product-knowledge.php';
         require_once VVA_PLUGIN_DIR . 'includes/class-vva-customer-service.php';
@@ -88,7 +89,6 @@ final class Valley_Virtual_Assistant {
         if (is_admin()) {
             require_once VVA_PLUGIN_DIR . 'includes/admin/class-vva-admin.php';
             require_once VVA_PLUGIN_DIR . 'includes/admin/class-vva-settings.php';
-            require_once VVA_PLUGIN_DIR . 'includes/admin/class-vva-analytics.php';
         }
     }
 

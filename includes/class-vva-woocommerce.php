@@ -488,21 +488,3 @@ class VVA_WooCommerce {
         echo '<div class="vva-product-assistant" data-product-id="' . esc_attr($product_id) . '"></div>';
     }
 }
-
-/**
- * Analytics helper class stub
- */
-class VVA_Analytics {
-    public static function track_event($event_type, $data) {
-        global $wpdb;
-
-        $table = $wpdb->prefix . 'vva_analytics';
-        $wpdb->insert($table, array(
-            'event_type' => $event_type,
-            'event_data' => json_encode($data),
-            'session_id' => isset($_COOKIE['vva_session_id']) ? $_COOKIE['vva_session_id'] : '',
-            'user_id' => get_current_user_id(),
-            'created_at' => current_time('mysql'),
-        ));
-    }
-}

@@ -376,3 +376,146 @@
 .vva-messages-container::-webkit-scrollbar-thumb:hover {
     background: #999;
 }
+
+/* Product Cards */
+.vva-products-container {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 12px;
+}
+
+.vva-product-card {
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 12px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    transition: box-shadow 0.3s ease;
+}
+
+.vva-product-card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+
+.vva-product-image {
+    width: 100%;
+    height: 180px;
+    overflow: hidden;
+    background: #f9f9f9;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.vva-product-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.vva-product-info {
+    padding: 12px 16px;
+}
+
+.vva-product-name {
+    font-size: 15px;
+    font-weight: 600;
+    color: #1d2327;
+    margin: 0 0 8px 0;
+    line-height: 1.4;
+}
+
+.vva-product-price {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.vva-price-current,
+.vva-price-sale {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--vva-primary-color, #e91e63);
+}
+
+.vva-price-regular {
+    font-size: 14px;
+    color: #999;
+}
+
+.vva-price-regular del {
+    text-decoration: line-through;
+}
+
+.vva-add-to-cart-btn {
+    width: 100%;
+    padding: 12px 20px;
+    background: var(--vva-primary-color, #e91e63);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin: 0 16px 12px 16px;
+    width: calc(100% - 32px);
+}
+
+.vva-add-to-cart-btn:hover:not(:disabled) {
+    background: var(--vva-primary-color-dark, #c2185b);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(233, 30, 99, 0.3);
+}
+
+.vva-add-to-cart-btn:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.vva-add-to-cart-btn.added {
+    background: #4caf50;
+}
+
+.vva-add-to-cart-btn.error {
+    background: #f44336;
+}
+
+.vva-product-link {
+    display: block;
+    text-align: center;
+    padding: 8px 16px 16px;
+    color: #666;
+    font-size: 13px;
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+.vva-product-link:hover {
+    color: var(--vva-primary-color, #e91e63);
+}
+
+/* Product Cards in Message */
+.vva-message-assistant .vva-products-container {
+    max-width: 280px;
+}
+
+/* Mobile Product Cards */
+@media (max-width: 480px) {
+    .vva-product-card {
+        max-width: 100%;
+    }
+
+    .vva-product-image {
+        height: 160px;
+    }
+
+    .vva-message-assistant .vva-products-container {
+        max-width: 100%;
+    }
+}

@@ -45,6 +45,9 @@ class VVA_AJAX {
 
         add_action('wp_ajax_vva_get_history', array($this, 'get_history'));
 
+        add_action('wp_ajax_vva_add_to_cart', array($this, 'add_to_cart'));
+        add_action('wp_ajax_nopriv_vva_add_to_cart', array($this, 'add_to_cart'));
+
         // Admin AJAX actions
         add_action('wp_ajax_vva_test_api', array($this, 'test_api'));
         add_action('wp_ajax_vva_get_analytics', array($this, 'get_analytics'));
@@ -147,9 +150,13 @@ class VVA_AJAX {
             'message_length' => strlen($message),
         ));
 
+        // Parse product tags and get product data
+        $products = $this->extract_products_from_message($response['content']);
+
         wp_send_json_success(array(
             'message' => $response['content'],
             'conversation_id' => $conversation_id,
+            'products' => $products,
         ));
     }
 
@@ -195,6 +202,45 @@ class VVA_AJAX {
         $history = $this->get_conversation_history($conversation_id);
 
         wp_send_json_success(array('history' => $history));
+    }
+
+    /**
+     * Add product to cart
+     */
+    public function add_to_cart() {
+        $this->verify_nonce();
+
+        $product_id = isset($_POST['product_id']) ? absint($_POST['product_id']) : 0;
+        $quantity = isset($_POST['quantity']) ? absint($_POST['quantity']) : 1;
+
+        if (!$product_id) {
+            wp_send_json_error(array('message' => __('Invalid product ID.', 'valley-virtual-assistant')));
+        }
+
+        // Verify WooCommerce is active
+        if (!function_exists('WC')) {
+            wp_send_json_error(array('message' => __('WooCommerce is not active.', 'valley-virtual-assistant')));
+        }
+
+        // Add to cart
+        $cart_item_key = WC()->cart->add_to_cart($product_id, $quantity);
+
+        if ($cart_item_key) {
+            // Track analytics
+            VVA_Analytics::track_event('product_added_to_cart', array(
+                'product_id' => $product_id,
+                'quantity' => $quantity,
+                'source' => 'virtual_assistant',
+            ));
+
+            wp_send_json_success(array(
+                'message' => __('Product added to cart!', 'valley-virtual-assistant'),
+                'cart_count' => WC()->cart->get_cart_contents_count(),
+                'cart_url' => wc_get_cart_url(),
+            ));
+        } else {
+            wp_send_json_error(array('message' => __('Failed to add product to cart.', 'valley-virtual-assistant')));
+        }
     }
 
     /**
@@ -344,5 +390,43 @@ class VVA_AJAX {
         setcookie('vva_session_id', $session_id, time() + (86400 * 30), '/');
 
         return $session_id;
+    }
+
+    /**
+     * Extract products from message with [PRODUCT:id] tags
+     *
+     * @param string $message Message content
+     * @return array Product data
+     */
+    private function extract_products_from_message($message) {
+        $products = array();
+
+        // Match [PRODUCT:123] pattern
+        if (preg_match_all('/\[PRODUCT:(\d+)\]/', $message, $matches)) {
+            $product_ids = $matches[1];
+            $wc = VVA_WooCommerce::instance();
+
+            foreach ($product_ids as $product_id) {
+                $product_data = $wc->get_product_info((int) $product_id);
+
+                if (!is_wp_error($product_data)) {
+                    $products[] = array(
+                        'id' => $product_data['id'],
+                        'name' => $product_data['name'],
+                        'price' => $product_data['price'],
+                        'regular_price' => $product_data['regular_price'],
+                        'sale_price' => $product_data['sale_price'],
+                        'on_sale' => $product_data['on_sale'],
+                        'stock_status' => $product_data['stock_status'],
+                        'in_stock' => $product_data['in_stock'],
+                        'url' => $product_data['url'],
+                        'image' => $product_data['image'],
+                        'short_description' => $product_data['short_description'],
+                    );
+                }
+            }
+        }
+
+        return $products;
     }
 }

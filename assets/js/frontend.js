@@ -132,7 +132,7 @@
 
                 if (response.success) {
                     // Add assistant message
-                    this.addMessage(response.data.message, 'assistant');
+                    this.addMessage(response.data.message, 'assistant', response.data.products);
                 } else {
                     this.addMessage('Sorry, I encountered an error. Please try again.', 'assistant');
                 }
@@ -143,7 +143,7 @@
             }
         }
 
-        addMessage(content, role) {
+        addMessage(content, role, products = []) {
             const $message = $('<div>', {
                 class: 'vva-message vva-message-' + role
             });
@@ -161,19 +161,36 @@
                 class: 'vva-message-content'
             });
 
-            // Convert line breaks and links
+            // Convert line breaks and links, strip product tags
             const formattedContent = this.formatMessage(content);
             $content.html(formattedContent);
 
             $message.append($content);
+
+            // Add product cards if products exist
+            if (role === 'assistant' && products && products.length > 0) {
+                const $productsContainer = $('<div>', {
+                    class: 'vva-products-container'
+                });
+
+                products.forEach(product => {
+                    const $productCard = this.createProductCard(product);
+                    $productsContainer.append($productCard);
+                });
+
+                $message.append($productsContainer);
+            }
 
             this.$messagesContainer.append($message);
             this.scrollToBottom();
         }
 
         formatMessage(content) {
+            // Strip [PRODUCT:id] tags (they're rendered as cards instead)
+            let formatted = content.replace(/\[PRODUCT:\d+\]/g, '');
+
             // Convert line breaks
-            let formatted = content.replace(/\n/g, '<br>');
+            formatted = formatted.replace(/\n/g, '<br>');
 
             // Convert URLs to links
             const urlRegex = /(https?:\/\/[^\s]+)/g;
@@ -205,6 +222,133 @@
                     scrollTop: this.$messagesContainer[0].scrollHeight
                 }, 300);
             }, 100);
+        }
+
+        createProductCard(product) {
+            const $card = $('<div>', {
+                class: 'vva-product-card',
+                'data-product-id': product.id
+            });
+
+            // Product Image
+            const $image = $('<div>', {
+                class: 'vva-product-image'
+            });
+            if (product.image) {
+                $image.append($('<img>', {
+                    src: product.image,
+                    alt: product.name
+                }));
+            }
+            $card.append($image);
+
+            // Product Info
+            const $info = $('<div>', {
+                class: 'vva-product-info'
+            });
+
+            const $name = $('<h4>', {
+                class: 'vva-product-name',
+                text: product.name
+            });
+            $info.append($name);
+
+            // Price
+            const $price = $('<div>', {
+                class: 'vva-product-price'
+            });
+
+            if (product.on_sale && product.sale_price) {
+                $price.append($('<span>', {
+                    class: 'vva-price-regular',
+                    html: '<del>' + this.formatPrice(product.regular_price) + '</del>'
+                }));
+                $price.append($('<span>', {
+                    class: 'vva-price-sale',
+                    text: this.formatPrice(product.sale_price)
+                }));
+            } else {
+                $price.append($('<span>', {
+                    class: 'vva-price-current',
+                    text: this.formatPrice(product.price)
+                }));
+            }
+            $info.append($price);
+
+            $card.append($info);
+
+            // Add to Cart Button
+            const $button = $('<button>', {
+                class: 'vva-add-to-cart-btn',
+                text: product.in_stock ? 'Add to Cart' : 'Out of Stock',
+                disabled: !product.in_stock
+            });
+
+            if (product.in_stock) {
+                $button.on('click', () => this.handleAddToCart(product.id, $button));
+            }
+
+            $card.append($button);
+
+            // View Product Link
+            const $link = $('<a>', {
+                href: product.url,
+                class: 'vva-product-link',
+                text: 'View Details',
+                target: '_blank'
+            });
+            $card.append($link);
+
+            return $card;
+        }
+
+        async handleAddToCart(productId, $button) {
+            const originalText = $button.text();
+            $button.prop('disabled', true).text('Adding...');
+
+            try {
+                const response = await $.ajax({
+                    url: vvaData.ajaxUrl,
+                    type: 'POST',
+                    data: {
+                        action: 'vva_add_to_cart',
+                        nonce: vvaData.nonce,
+                        product_id: productId,
+                        quantity: 1
+                    }
+                });
+
+                if (response.success) {
+                    $button.text('✓ Added!').addClass('added');
+
+                    // Show success message
+                    this.addMessage('Great choice! I\'ve added that to your cart. ' + response.data.message, 'assistant');
+
+                    // Reset button after 2 seconds
+                    setTimeout(() => {
+                        $button.text(originalText).removeClass('added').prop('disabled', false);
+                    }, 2000);
+                } else {
+                    $button.text('Failed').addClass('error');
+                    this.addMessage('Sorry, I couldn\'t add that to your cart. Please try again.', 'assistant');
+
+                    setTimeout(() => {
+                        $button.text(originalText).removeClass('error').prop('disabled', false);
+                    }, 2000);
+                }
+            } catch (error) {
+                console.error('Error adding to cart:', error);
+                $button.text('Error').addClass('error');
+                this.addMessage('Sorry, something went wrong. Please try again.', 'assistant');
+
+                setTimeout(() => {
+                    $button.text(originalText).removeClass('error').prop('disabled', false);
+                }, 2000);
+            }
+        }
+
+        formatPrice(price) {
+            return '$' + parseFloat(price).toFixed(2);
         }
 
         adjustInputHeight() {

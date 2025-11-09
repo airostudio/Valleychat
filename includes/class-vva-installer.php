@@ -110,10 +110,10 @@ class VVA_Installer {
     private static function create_default_options() {
         $defaults = array(
             // Assistant personality
-            'vva_assistant_name' => 'Valley',
+            'vva_assistant_name' => 'Sophie',
             'vva_assistant_personality' => 'friendly_professional',
             'vva_assistant_avatar' => VVA_PLUGIN_URL . 'assets/images/avatar-default.png',
-            'vva_welcome_message' => 'Hi! I\'m Valley, your personal shopping assistant. I\'m here to help you find the perfect products in complete discretion. How can I assist you today?',
+            'vva_welcome_message' => 'Hi! I\'m Sophie, your personal shopping assistant. I\'m here to help you discover amazing products that are perfect for you. What can I help you find today?',
 
             // AI Settings
             'vva_ai_provider' => 'anthropic',

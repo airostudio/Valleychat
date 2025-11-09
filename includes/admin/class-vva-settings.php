@@ -221,7 +221,7 @@ class VVA_Settings {
                 </th>
                 <td>
                     <select id="vva_anthropic_model" name="vva_anthropic_model">
-                        <option value="claude-3-5-sonnet-20241022" <?php selected(get_option('vva_anthropic_model'), 'claude-3-5-sonnet-20241022'); ?>>
+                        <option value="claude-3-5-sonnet-20240620" <?php selected(get_option('vva_anthropic_model'), 'claude-3-5-sonnet-20240620'); ?>>
                             Claude 3.5 Sonnet (Recommended)
                         </option>
                         <option value="claude-3-opus-20240229" <?php selected(get_option('vva_anthropic_model'), 'claude-3-opus-20240229'); ?>>

@@ -118,7 +118,7 @@ class VVA_Installer {
             // AI Settings
             'vva_ai_provider' => 'anthropic',
             'vva_anthropic_api_key' => '',
-            'vva_anthropic_model' => 'claude-3-5-sonnet-20241022',
+            'vva_anthropic_model' => 'claude-3-5-sonnet-20240620',
             'vva_max_tokens' => 4096,
             'vva_temperature' => 0.7,
 

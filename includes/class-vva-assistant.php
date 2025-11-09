@@ -49,7 +49,7 @@ class VVA_Assistant {
      */
     private function __construct() {
         $this->api_key = get_option('vva_anthropic_api_key');
-        $this->model = get_option('vva_anthropic_model', 'claude-3-5-sonnet-20241022');
+        $this->model = get_option('vva_anthropic_model', 'claude-3-5-sonnet-20240620');
         $this->system_prompt = $this->build_system_prompt();
     }
 

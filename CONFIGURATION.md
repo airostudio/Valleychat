@@ -64,9 +64,9 @@ define('VVA_LOG_LEVEL', 'debug'); // debug, info, warning, error
 
 #### vva_anthropic_model
 - **Type**: String
-- **Default**: "claude-3-5-sonnet-20241022"
+- **Default**: "claude-3-5-sonnet-20240620"
 - **Options**:
-  - claude-3-5-sonnet-20241022 (recommended)
+  - claude-3-5-sonnet-20240620 (recommended)
   - claude-3-opus-20240229
   - claude-3-haiku-20240307
 - **Description**: Claude model to use

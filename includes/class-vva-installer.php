@@ -116,9 +116,11 @@ class VVA_Installer {
             'vva_welcome_message' => 'Hi! I\'m Sophie, your personal shopping assistant. I\'m here to help you explore our products and find exactly what you\'re looking for. How can I help you today?',
 
             // AI Settings
-            'vva_ai_provider' => 'anthropic',
+            'vva_ai_provider' => 'gemini',
             'vva_anthropic_api_key' => '',
             'vva_anthropic_model' => 'claude-3-5-sonnet-20240620',
+            'vva_gemini_api_key' => '',
+            'vva_gemini_model' => 'gemini-1.5-pro',
             'vva_max_tokens' => 4096,
             'vva_temperature' => 0.7,
 

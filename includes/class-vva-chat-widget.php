@@ -72,6 +72,31 @@ class VVA_Chat_Widget {
                 </svg>
             </button>
 
+            <!-- Age Verification Disclaimer -->
+            <div id="vva-age-disclaimer" class="vva-age-disclaimer" style="display: none;">
+                <div class="vva-disclaimer-content">
+                    <div class="vva-disclaimer-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <line x1="12" y1="16" x2="12" y2="12"></line>
+                            <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                        </svg>
+                    </div>
+                    <h3>Adult Content Notice</h3>
+                    <p>This chat assistant provides information about adult products.</p>
+                    <p><strong>You must be 18 years or older to continue.</strong></p>
+                    <p class="vva-disclaimer-privacy">All conversations are private and confidential. We maintain discreet shipping and billing.</p>
+                    <div class="vva-disclaimer-buttons">
+                        <button id="vva-confirm-age" class="vva-btn-confirm">
+                            I am 18+ - Continue
+                        </button>
+                        <button id="vva-decline-age" class="vva-btn-decline">
+                            Exit
+                        </button>
+                    </div>
+                </div>
+            </div>
+
             <!-- Chat Window -->
             <div id="vva-chat-window" class="vva-chat-window" style="display: none;">
                 <!-- Header -->

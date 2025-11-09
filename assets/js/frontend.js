@@ -11,6 +11,7 @@
             this.conversationId = null;
             this.isOpen = false;
             this.isTyping = false;
+            this.ageVerified = this.checkAgeVerification();
 
             this.init();
         }
@@ -25,6 +26,9 @@
             this.$widget = $('#vva-chat-widget');
             this.$toggle = $('#vva-chat-toggle');
             this.$window = $('#vva-chat-window');
+            this.$disclaimer = $('#vva-age-disclaimer');
+            this.$confirmAge = $('#vva-confirm-age');
+            this.$declineAge = $('#vva-decline-age');
             this.$minimize = $('.vva-minimize');
             this.$form = $('#vva-chat-form');
             this.$input = $('#vva-message-input');
@@ -35,7 +39,11 @@
         bindEvents() {
             // Toggle chat window
             this.$toggle.on('click', () => this.toggleChat());
-            this.$minimize.on('click', () => this.toggleChat());
+            this.$minimize.on('click', () => this.closeChat());
+
+            // Age verification
+            this.$confirmAge.on('click', () => this.confirmAge());
+            this.$declineAge.on('click', () => this.declineAge());
 
             // Submit message
             this.$form.on('submit', (e) => this.handleSubmit(e));
@@ -44,38 +52,90 @@
             this.$input.on('input', () => this.adjustInputHeight());
         }
 
+        checkAgeVerification() {
+            // Check if user previously verified age (stored for session)
+            return sessionStorage.getItem('vva_age_verified') === 'true';
+        }
+
+        confirmAge() {
+            this.ageVerified = true;
+            sessionStorage.setItem('vva_age_verified', 'true');
+
+            // Hide disclaimer, show chat
+            this.$disclaimer.removeClass('visible');
+            setTimeout(() => {
+                this.$disclaimer.hide();
+                this.showChat();
+            }, 300);
+        }
+
+        declineAge() {
+            // Close everything
+            this.$disclaimer.removeClass('visible');
+            this.$toggle.removeClass('active');
+            setTimeout(() => {
+                this.$disclaimer.hide();
+            }, 300);
+            this.isOpen = false;
+        }
+
         applyCustomColors() {
             const primaryColor = vvaData.primaryColor || '#e91e63';
             document.documentElement.style.setProperty('--vva-primary-color', primaryColor);
         }
 
         toggleChat() {
-            this.isOpen = !this.isOpen;
-
             if (this.isOpen) {
-                this.$window.show();
-                setTimeout(() => {
-                    this.$window.addClass('visible');
-                    this.$toggle.addClass('active');
-                }, 10);
-
-                // Start conversation if not started
-                if (!this.conversationId) {
-                    this.startConversation();
-                }
-
-                // Focus input
-                this.$input.focus();
-
-                // Scroll to bottom
-                this.scrollToBottom();
+                this.closeChat();
             } else {
-                this.$window.removeClass('visible');
-                this.$toggle.removeClass('active');
-                setTimeout(() => {
-                    this.$window.hide();
-                }, 300);
+                if (!this.ageVerified) {
+                    // Show age disclaimer first
+                    this.showDisclaimer();
+                } else {
+                    // Already verified, show chat directly
+                    this.showChat();
+                }
             }
+        }
+
+        showDisclaimer() {
+            this.isOpen = true;
+            this.$toggle.addClass('active');
+            this.$disclaimer.show();
+            setTimeout(() => {
+                this.$disclaimer.addClass('visible');
+            }, 10);
+        }
+
+        showChat() {
+            this.isOpen = true;
+            this.$toggle.addClass('active');
+            this.$window.show();
+            setTimeout(() => {
+                this.$window.addClass('visible');
+            }, 10);
+
+            // Start conversation if not started
+            if (!this.conversationId) {
+                this.startConversation();
+            }
+
+            // Focus input
+            this.$input.focus();
+
+            // Scroll to bottom
+            this.scrollToBottom();
+        }
+
+        closeChat() {
+            this.isOpen = false;
+            this.$window.removeClass('visible');
+            this.$disclaimer.removeClass('visible');
+            this.$toggle.removeClass('active');
+            setTimeout(() => {
+                this.$window.hide();
+                this.$disclaimer.hide();
+            }, 300);
         }
 
         async startConversation() {

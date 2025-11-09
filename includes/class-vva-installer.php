@@ -113,7 +113,7 @@ class VVA_Installer {
             'vva_assistant_name' => 'Sophie',
             'vva_assistant_personality' => 'friendly_professional',
             'vva_assistant_avatar' => VVA_PLUGIN_URL . 'assets/images/sophie-avatar.svg',
-            'vva_welcome_message' => 'Hi! I\'m Sophie, your personal shopping assistant. I\'m here to help you discover amazing products that are perfect for you. What can I help you find today?',
+            'vva_welcome_message' => 'Hi! I\'m Sophie, your personal shopping assistant. I\'m here to help you explore our products and find exactly what you\'re looking for. How can I help you today?',
 
             // AI Settings
             'vva_ai_provider' => 'anthropic',

@@ -149,11 +149,11 @@ final class Valley_Virtual_Assistant {
         wp_localize_script('vva-frontend', 'vvaData', array(
             'ajaxUrl' => admin_url('admin-ajax.php'),
             'nonce' => wp_create_nonce('vva-nonce'),
-            'assistantName' => get_option('vva_assistant_name', 'Valley'),
-            'assistantAvatar' => get_option('vva_assistant_avatar', VVA_PLUGIN_URL . 'assets/images/avatar-default.png'),
+            'assistantName' => get_option('vva_assistant_name', 'Sophie'),
+            'assistantAvatar' => get_option('vva_assistant_avatar', VVA_PLUGIN_URL . 'assets/images/sophie-avatar.svg'),
             'primaryColor' => get_option('vva_primary_color', '#e91e63'),
             'position' => get_option('vva_widget_position', 'bottom-right'),
-            'welcomeMessage' => get_option('vva_welcome_message', 'Hi! I\'m here to help you find the perfect products. How can I assist you today?'),
+            'welcomeMessage' => get_option('vva_welcome_message', 'Hi! I\'m Sophie, your personal shopping assistant. How can I help you today?'),
         ));
     }
 

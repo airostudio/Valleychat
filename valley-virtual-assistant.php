@@ -138,8 +138,10 @@ final class Valley_Virtual_Assistant {
      */
     public function woocommerce_init() {
         // Ensure WooCommerce session is started for cart functionality
-        if (!is_admin() && !WC()->session->has_session()) {
-            WC()->session->set_customer_session_cookie(true);
+        if (!is_admin() && function_exists('WC') && WC()->session) {
+            if (!WC()->session->has_session()) {
+                WC()->session->set_customer_session_cookie(true);
+            }
         }
     }
 
@@ -147,9 +149,11 @@ final class Valley_Virtual_Assistant {
      * Add cart fragments for AJAX cart updates
      */
     public function cart_fragments($fragments) {
-        // Add cart count to fragments
-        $fragments['vva_cart_count'] = WC()->cart->get_cart_contents_count();
-        $fragments['vva_cart_total'] = WC()->cart->get_cart_total();
+        // Only add fragments if WooCommerce is properly initialized
+        if (function_exists('WC') && WC()->cart) {
+            $fragments['vva_cart_count'] = WC()->cart->get_cart_contents_count();
+            $fragments['vva_cart_total'] = WC()->cart->get_cart_total();
+        }
 
         return $fragments;
     }

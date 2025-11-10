@@ -240,6 +240,11 @@ class VVA_AJAX {
             wp_send_json_error(array('message' => __('This product cannot be purchased.', 'valley-virtual-assistant')));
         }
 
+        // Verify cart is available
+        if (!WC()->cart) {
+            wp_send_json_error(array('message' => __('Cart is not available.', 'valley-virtual-assistant')));
+        }
+
         // Add to cart
         $cart_item_key = WC()->cart->add_to_cart($product_id, $quantity, $variation_id, $variation);
 
@@ -255,14 +260,17 @@ class VVA_AJAX {
             do_action('woocommerce_ajax_added_to_cart', $product_id);
 
             // Get cart fragments for AJAX updates
-            if (function_exists('wc_cart_fragments')) {
+            if (function_exists('wc_cart_fragments') && class_exists('WC_AJAX')) {
                 WC_AJAX::get_refreshed_fragments();
             }
 
+            $cart_count = WC()->cart ? WC()->cart->get_cart_contents_count() : 0;
+            $cart_total = WC()->cart ? WC()->cart->get_cart_total() : '';
+
             wp_send_json_success(array(
                 'message' => sprintf(__('%s has been added to your cart!', 'valley-virtual-assistant'), $product->get_name()),
-                'cart_count' => WC()->cart->get_cart_contents_count(),
-                'cart_total' => WC()->cart->get_cart_total(),
+                'cart_count' => $cart_count,
+                'cart_total' => $cart_total,
                 'cart_url' => wc_get_cart_url(),
                 'product_name' => $product->get_name(),
             ));

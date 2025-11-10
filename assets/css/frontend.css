@@ -278,6 +278,7 @@
     gap: 10px;
     margin-bottom: 16px;
     animation: fadeIn 0.3s ease;
+    align-items: flex-start;
 }
 
 @keyframes fadeIn {
@@ -305,6 +306,7 @@
     border-radius: 18px;
     max-width: 75%;
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    word-wrap: break-word;
 }
 
 .vva-message-user .vva-message-content {
@@ -315,6 +317,16 @@
 
 .vva-message-user {
     flex-direction: row-reverse;
+}
+
+/* Assistant message structure with buttons */
+.vva-message-assistant {
+    flex-wrap: wrap;
+}
+
+.vva-message-assistant .vva-quick-buttons {
+    margin-left: 42px; /* Align with message content (avatar width + gap) */
+    max-width: calc(75% - 10px);
 }
 
 .vva-message-content p {
@@ -451,11 +463,30 @@
     color: #4caf50;
 }
 
+/* Tablet Responsiveness */
+@media (max-width: 768px) {
+    .vva-chat-window {
+        width: 360px;
+        max-width: calc(100vw - 40px);
+    }
+
+    .vva-product-image {
+        height: 160px;
+    }
+
+    .vva-message-assistant .vva-products-container {
+        max-width: 100%;
+    }
+}
+
 /* Mobile Responsiveness */
 @media (max-width: 480px) {
-    #vva-chat-widget.vva-widget-bottom-right,
-    #vva-chat-widget.vva-widget-bottom-left {
+    #vva-chat-widget.vva-widget-bottom-right {
         right: 10px;
+        bottom: 10px;
+    }
+
+    #vva-chat-widget.vva-widget-bottom-left {
         left: 10px;
         bottom: 10px;
     }
@@ -464,13 +495,49 @@
         width: calc(100vw - 20px);
         height: calc(100vh - 80px);
         bottom: 70px;
-        right: 10px !important;
-        left: 10px !important;
+    }
+
+    .vva-widget-bottom-right .vva-chat-window {
+        right: 10px;
+        left: auto;
+    }
+
+    .vva-widget-bottom-left .vva-chat-window {
+        left: 10px;
+        right: auto;
+    }
+
+    .vva-age-disclaimer {
+        width: calc(100vw - 20px);
+    }
+
+    .vva-widget-bottom-right .vva-age-disclaimer {
+        right: 10px;
+        left: auto;
+    }
+
+    .vva-widget-bottom-left .vva-age-disclaimer {
+        left: 10px;
+        right: auto;
     }
 
     .vva-chat-toggle {
         width: 50px;
         height: 50px;
+    }
+
+    .vva-chat-toggle svg {
+        width: 24px;
+        height: 24px;
+    }
+
+    .vva-messages-container {
+        padding: 12px;
+    }
+
+    .vva-message-content {
+        max-width: 85%;
+        font-size: 13px;
     }
 }
 
@@ -638,43 +705,46 @@
 /* Quick Reply Buttons */
 .vva-quick-buttons {
     display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin-top: 12px;
+    flex-direction: column;
+    gap: 6px;
+    margin-top: 10px;
     padding: 0;
+    width: 100%;
 }
 
 .vva-quick-button {
     background: #fff;
-    border: 2px solid var(--vva-primary-color, #e91e63);
+    border: 1px solid var(--vva-primary-color, #e91e63);
     color: var(--vva-primary-color, #e91e63);
-    padding: 8px 16px;
-    border-radius: 20px;
-    font-size: 14px;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 12px;
     font-weight: 500;
     cursor: pointer;
     transition: all 0.2s ease;
-    white-space: nowrap;
+    text-align: left;
     outline: none;
+    width: 100%;
+    max-width: 100%;
 }
 
 .vva-quick-button:hover:not(:disabled) {
     background: var(--vva-primary-color, #e91e63);
     color: #fff;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(233, 30, 99, 0.2);
+    transform: translateX(4px);
+    box-shadow: 0 2px 6px rgba(233, 30, 99, 0.2);
 }
 
 .vva-quick-button:active:not(:disabled) {
-    transform: translateY(0);
+    transform: translateX(0);
 }
 
 .vva-quick-button:disabled,
 .vva-quick-button.clicked {
     opacity: 0.5;
     cursor: not-allowed;
-    background: #f0f0f0;
-    border-color: #ccc;
+    background: #f5f5f5;
+    border-color: #ddd;
     color: #999;
 }
 
@@ -684,10 +754,23 @@
     opacity: 0.6;
 }
 
+/* Tablet Quick Buttons */
+@media (max-width: 768px) {
+    .vva-message-assistant .vva-quick-buttons {
+        margin-left: 42px;
+        max-width: 100%;
+    }
+}
+
 /* Mobile Quick Buttons */
 @media (max-width: 480px) {
     .vva-quick-button {
-        font-size: 13px;
-        padding: 6px 14px;
+        font-size: 11px;
+        padding: 5px 10px;
+    }
+
+    .vva-message-assistant .vva-quick-buttons {
+        margin-left: 0;
+        max-width: 100%;
     }
 }

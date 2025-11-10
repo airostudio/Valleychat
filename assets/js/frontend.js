@@ -201,10 +201,17 @@
                 // Hide typing indicator
                 this.hideTypingIndicator();
 
+                console.log('VVA: Full AJAX response:', response);
+
                 if (response.success) {
+                    console.log('VVA: Assistant message:', response.data.message);
+                    console.log('VVA: Products data:', response.data.products);
+                    console.log('VVA: Number of products:', response.data.products ? response.data.products.length : 0);
+
                     // Add assistant message
                     this.addMessage(response.data.message, 'assistant', response.data.products);
                 } else {
+                    console.error('VVA: Response failed:', response);
                     this.addMessage('Sorry, I encountered an error. Please try again.', 'assistant');
                 }
             } catch (error) {
@@ -215,6 +222,8 @@
         }
 
         addMessage(content, role, products = []) {
+            console.log('VVA: addMessage called with role:', role, 'products:', products);
+
             const $message = $('<div>', {
                 class: 'vva-message vva-message-' + role
             });
@@ -249,16 +258,22 @@
 
             // Add product cards if products exist
             if (role === 'assistant' && products && products.length > 0) {
+                console.log('VVA: Creating products container with', products.length, 'products');
+
                 const $productsContainer = $('<div>', {
                     class: 'vva-products-container'
                 });
 
                 products.forEach(product => {
+                    console.log('VVA: Processing product:', product);
                     const $productCard = this.createProductCard(product);
                     $productsContainer.append($productCard);
                 });
 
                 $message.append($productsContainer);
+                console.log('VVA: Products container appended to message');
+            } else {
+                console.log('VVA: No products to display. Role:', role, 'Products:', products);
             }
 
             this.$messagesContainer.append($message);

@@ -77,6 +77,7 @@
     transition: all 0.3s ease;
     opacity: 0;
     transform: scale(0.9) translateY(20px);
+    -webkit-overflow-scrolling: touch;
 }
 
 .vva-widget-bottom-right .vva-chat-window {
@@ -269,8 +270,10 @@
 .vva-messages-container {
     flex: 1;
     overflow-y: auto;
+    overflow-x: hidden;
     padding: 20px;
     background: #f5f5f5;
+    -webkit-overflow-scrolling: touch;
 }
 
 .vva-message {
@@ -278,6 +281,7 @@
     gap: 10px;
     margin-bottom: 16px;
     animation: fadeIn 0.3s ease;
+    align-items: flex-start;
 }
 
 @keyframes fadeIn {
@@ -305,6 +309,7 @@
     border-radius: 18px;
     max-width: 75%;
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    word-wrap: break-word;
 }
 
 .vva-message-user .vva-message-content {
@@ -315,6 +320,16 @@
 
 .vva-message-user {
     flex-direction: row-reverse;
+}
+
+/* Assistant message structure with buttons */
+.vva-message-assistant {
+    flex-wrap: wrap;
+}
+
+.vva-message-assistant .vva-quick-buttons {
+    margin-left: 42px; /* Align with message content (avatar width + gap) */
+    max-width: calc(75% - 10px);
 }
 
 .vva-message-content p {
@@ -387,6 +402,7 @@
     padding: 16px;
     background: white;
     border-top: 1px solid #e0e0e0;
+    flex-shrink: 0;
 }
 
 #vva-chat-form {
@@ -400,9 +416,11 @@
     padding: 12px 16px;
     border: 1px solid #e0e0e0;
     border-radius: 24px;
-    font-size: 14px;
+    font-size: 16px;
     outline: none;
     transition: border-color 0.2s;
+    -webkit-appearance: none;
+    min-height: 44px;
 }
 
 .vva-message-input:focus {
@@ -410,8 +428,10 @@
 }
 
 .vva-send-button {
-    width: 40px;
-    height: 40px;
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    min-height: 44px;
     border-radius: 50%;
     background: var(--vva-primary-color, #e91e63);
     border: none;
@@ -421,6 +441,7 @@
     align-items: center;
     justify-content: center;
     transition: background 0.2s;
+    flex-shrink: 0;
 }
 
 .vva-send-button:hover {
@@ -451,11 +472,30 @@
     color: #4caf50;
 }
 
+/* Tablet Responsiveness */
+@media (max-width: 768px) {
+    .vva-chat-window {
+        width: 360px;
+        max-width: calc(100vw - 40px);
+    }
+
+    .vva-product-image {
+        height: 160px;
+    }
+
+    .vva-message-assistant .vva-products-container {
+        max-width: 100%;
+    }
+}
+
 /* Mobile Responsiveness */
 @media (max-width: 480px) {
-    #vva-chat-widget.vva-widget-bottom-right,
-    #vva-chat-widget.vva-widget-bottom-left {
+    #vva-chat-widget.vva-widget-bottom-right {
         right: 10px;
+        bottom: 10px;
+    }
+
+    #vva-chat-widget.vva-widget-bottom-left {
         left: 10px;
         bottom: 10px;
     }
@@ -463,14 +503,61 @@
     .vva-chat-window {
         width: calc(100vw - 20px);
         height: calc(100vh - 80px);
+        max-height: calc(100vh - 80px);
         bottom: 70px;
-        right: 10px !important;
-        left: 10px !important;
+        border-radius: 12px;
+    }
+
+    .vva-widget-bottom-right .vva-chat-window {
+        right: 10px;
+        left: auto;
+    }
+
+    .vva-widget-bottom-left .vva-chat-window {
+        left: 10px;
+        right: auto;
+    }
+
+    .vva-chat-input-area {
+        padding: 12px;
+    }
+
+    .vva-message-input {
+        font-size: 16px;
+        padding: 10px 14px;
+    }
+
+    .vva-age-disclaimer {
+        width: calc(100vw - 20px);
+    }
+
+    .vva-widget-bottom-right .vva-age-disclaimer {
+        right: 10px;
+        left: auto;
+    }
+
+    .vva-widget-bottom-left .vva-age-disclaimer {
+        left: 10px;
+        right: auto;
     }
 
     .vva-chat-toggle {
         width: 50px;
         height: 50px;
+    }
+
+    .vva-chat-toggle svg {
+        width: 24px;
+        height: 24px;
+    }
+
+    .vva-messages-container {
+        padding: 12px;
+    }
+
+    .vva-message-content {
+        max-width: 85%;
+        font-size: 13px;
     }
 }
 
@@ -494,10 +581,11 @@
 
 /* Product Cards */
 .vva-products-container {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
     margin-top: 12px;
+    width: 100%;
 }
 
 .vva-product-card {
@@ -509,6 +597,7 @@
     flex-direction: column;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
     transition: box-shadow 0.3s ease;
+    min-width: 0;
 }
 
 .vva-product-card:hover {
@@ -533,6 +622,9 @@
 
 .vva-product-info {
     padding: 12px 16px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
 }
 
 .vva-product-name {
@@ -548,6 +640,7 @@
     align-items: center;
     gap: 8px;
     margin-bottom: 12px;
+    flex-wrap: wrap;
 }
 
 .vva-price-current,
@@ -566,6 +659,14 @@
     text-decoration: line-through;
 }
 
+.vva-product-actions {
+    padding: 0 16px 16px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: auto;
+}
+
 .vva-add-to-cart-btn {
     width: 100%;
     padding: 12px 20px;
@@ -577,8 +678,8 @@
     font-weight: 600;
     cursor: pointer;
     transition: all 0.2s ease;
-    margin: 0 16px 12px 16px;
-    width: calc(100% - 32px);
+    text-align: center;
+    min-height: 44px;
 }
 
 .vva-add-to-cart-btn:hover:not(:disabled) {
@@ -604,24 +705,49 @@
 .vva-product-link {
     display: block;
     text-align: center;
-    padding: 8px 16px 16px;
+    padding: 10px 16px;
     color: #666;
     font-size: 13px;
     text-decoration: none;
-    transition: color 0.2s;
+    transition: all 0.2s;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    min-height: 44px;
+    line-height: 22px;
 }
 
 .vva-product-link:hover {
     color: var(--vva-primary-color, #e91e63);
+    border-color: var(--vva-primary-color, #e91e63);
+    background: rgba(233, 30, 99, 0.05);
 }
 
 /* Product Cards in Message */
 .vva-message-assistant .vva-products-container {
-    max-width: 280px;
+    max-width: 100%;
+    margin-left: 42px;
+}
+
+/* Tablet Product Cards */
+@media (max-width: 768px) {
+    .vva-products-container {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
+    .vva-message-assistant .vva-products-container {
+        margin-left: 42px;
+    }
 }
 
 /* Mobile Product Cards */
 @media (max-width: 480px) {
+    .vva-products-container {
+        grid-template-columns: 1fr;
+        gap: 10px;
+        margin-left: 0;
+    }
+
     .vva-product-card {
         max-width: 100%;
     }
@@ -632,49 +758,67 @@
 
     .vva-message-assistant .vva-products-container {
         max-width: 100%;
+        margin-left: 0;
+    }
+
+    .vva-product-name {
+        font-size: 14px;
+    }
+
+    .vva-add-to-cart-btn {
+        font-size: 13px;
+        padding: 10px 16px;
+    }
+
+    .vva-product-link {
+        font-size: 12px;
+        padding: 8px 12px;
     }
 }
 
 /* Quick Reply Buttons */
 .vva-quick-buttons {
     display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin-top: 12px;
+    flex-direction: column;
+    gap: 6px;
+    margin-top: 10px;
     padding: 0;
+    width: 100%;
 }
 
 .vva-quick-button {
     background: #fff;
-    border: 2px solid var(--vva-primary-color, #e91e63);
+    border: 1px solid var(--vva-primary-color, #e91e63);
     color: var(--vva-primary-color, #e91e63);
-    padding: 8px 16px;
-    border-radius: 20px;
-    font-size: 14px;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 12px;
     font-weight: 500;
     cursor: pointer;
     transition: all 0.2s ease;
-    white-space: nowrap;
+    text-align: left;
     outline: none;
+    width: 100%;
+    max-width: 100%;
 }
 
 .vva-quick-button:hover:not(:disabled) {
     background: var(--vva-primary-color, #e91e63);
     color: #fff;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(233, 30, 99, 0.2);
+    transform: translateX(4px);
+    box-shadow: 0 2px 6px rgba(233, 30, 99, 0.2);
 }
 
 .vva-quick-button:active:not(:disabled) {
-    transform: translateY(0);
+    transform: translateX(0);
 }
 
 .vva-quick-button:disabled,
 .vva-quick-button.clicked {
     opacity: 0.5;
     cursor: not-allowed;
-    background: #f0f0f0;
-    border-color: #ccc;
+    background: #f5f5f5;
+    border-color: #ddd;
     color: #999;
 }
 
@@ -684,10 +828,23 @@
     opacity: 0.6;
 }
 
+/* Tablet Quick Buttons */
+@media (max-width: 768px) {
+    .vva-message-assistant .vva-quick-buttons {
+        margin-left: 42px;
+        max-width: 100%;
+    }
+}
+
 /* Mobile Quick Buttons */
 @media (max-width: 480px) {
     .vva-quick-button {
-        font-size: 13px;
-        padding: 6px 14px;
+        font-size: 11px;
+        padding: 5px 10px;
+    }
+
+    .vva-message-assistant .vva-quick-buttons {
+        margin-left: 0;
+        max-width: 100%;
     }
 }

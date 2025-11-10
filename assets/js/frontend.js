@@ -365,6 +365,11 @@
 
             $card.append($info);
 
+            // Product Actions Container
+            const $actions = $('<div>', {
+                class: 'vva-product-actions'
+            });
+
             // Add to Cart Button
             const $button = $('<button>', {
                 class: 'vva-add-to-cart-btn',
@@ -376,7 +381,7 @@
                 $button.on('click', () => this.handleAddToCart(product.id, $button));
             }
 
-            $card.append($button);
+            $actions.append($button);
 
             // View Product Link
             const $link = $('<a>', {
@@ -385,7 +390,9 @@
                 text: 'View Details',
                 target: '_blank'
             });
-            $card.append($link);
+            $actions.append($link);
+
+            $card.append($actions);
 
             return $card;
         }

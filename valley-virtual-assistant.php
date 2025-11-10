@@ -171,12 +171,33 @@ final class Valley_Virtual_Assistant {
      * Enqueue admin assets
      */
     public function enqueue_admin_assets($hook) {
+        // Only load on our plugin pages
         if (strpos($hook, 'valley-virtual-assistant') === false) {
             return;
         }
 
+        // Enqueue WordPress media library if needed
+        wp_enqueue_media();
+
+        // Enqueue color picker
+        wp_enqueue_style('wp-color-picker');
+
+        // Load select2 if available (for enhanced selects)
+        if (wp_script_is('select2', 'registered')) {
+            wp_enqueue_script('select2');
+            wp_enqueue_style('select2');
+        }
+
+        // Enqueue our admin styles and scripts
         wp_enqueue_style('vva-admin', VVA_PLUGIN_URL . 'assets/css/admin.css', array(), VVA_VERSION);
-        wp_enqueue_script('vva-admin', VVA_PLUGIN_URL . 'assets/js/admin.js', array('jquery'), VVA_VERSION, true);
+
+        // Add proper dependencies including wp-color-picker
+        $dependencies = array('jquery', 'wp-color-picker');
+        if (wp_script_is('select2', 'registered')) {
+            $dependencies[] = 'select2';
+        }
+
+        wp_enqueue_script('vva-admin', VVA_PLUGIN_URL . 'assets/js/admin.js', $dependencies, VVA_VERSION, true);
 
         wp_localize_script('vva-admin', 'vvaAdminData', array(
             'ajaxUrl' => admin_url('admin-ajax.php'),

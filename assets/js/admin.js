@@ -7,6 +7,14 @@
 
     $(document).ready(function() {
 
+        // Initialize select2 for enhanced selects if available
+        if (typeof $.fn.select2 !== 'undefined') {
+            $('select.enhanced-select').select2({
+                minimumResultsForSearch: 10,
+                width: '100%'
+            });
+        }
+
         // Test API Connection
         $('#vva-test-api, #vva-test-api-connection').on('click', function(e) {
             e.preventDefault();

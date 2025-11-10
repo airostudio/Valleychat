@@ -394,6 +394,8 @@
             const originalText = $button.text();
             $button.prop('disabled', true).text('Adding...');
 
+            console.log('VVA: Attempting to add product to cart:', productId);
+
             try {
                 const response = await $.ajax({
                     url: vvaData.ajaxUrl,
@@ -406,6 +408,8 @@
                     }
                 });
 
+                console.log('VVA: Add to cart response:', response);
+
                 if (response.success) {
                     $button.text('✓ Added!').addClass('added');
 
@@ -417,15 +421,17 @@
                         $button.text(originalText).removeClass('added').prop('disabled', false);
                     }, 2000);
                 } else {
+                    console.error('VVA: Add to cart failed:', response.data);
                     $button.text('Failed').addClass('error');
-                    this.addMessage('Sorry, I couldn\'t add that to your cart. Please try again.', 'assistant');
+                    const errorMsg = response.data && response.data.message ? response.data.message : 'Please try again.';
+                    this.addMessage('Sorry, I couldn\'t add that to your cart. ' + errorMsg, 'assistant');
 
                     setTimeout(() => {
                         $button.text(originalText).removeClass('error').prop('disabled', false);
                     }, 2000);
                 }
             } catch (error) {
-                console.error('Error adding to cart:', error);
+                console.error('VVA: Error adding to cart:', error);
                 $button.text('Error').addClass('error');
                 this.addMessage('Sorry, something went wrong. Please try again.', 'assistant');
 

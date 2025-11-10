@@ -33,6 +33,9 @@ class VVA_AJAX {
      * Constructor
      */
     private function __construct() {
+        // Ensure WooCommerce cart is loaded for AJAX requests
+        add_action('wp_loaded', array($this, 'ensure_wc_cart_loaded'));
+
         // Public AJAX actions (logged in and out)
         add_action('wp_ajax_vva_send_message', array($this, 'send_message'));
         add_action('wp_ajax_nopriv_vva_send_message', array($this, 'send_message'));
@@ -51,6 +54,36 @@ class VVA_AJAX {
         // Admin AJAX actions
         add_action('wp_ajax_vva_test_api', array($this, 'test_api'));
         add_action('wp_ajax_vva_get_analytics', array($this, 'get_analytics'));
+    }
+
+    /**
+     * Ensure WooCommerce cart is loaded for AJAX requests
+     */
+    public function ensure_wc_cart_loaded() {
+        // Only for AJAX requests
+        if (!defined('DOING_AJAX') || !DOING_AJAX) {
+            return;
+        }
+
+        // Only for our add_to_cart action
+        $action = isset($_REQUEST['action']) ? sanitize_text_field($_REQUEST['action']) : '';
+        if ($action !== 'vva_add_to_cart') {
+            return;
+        }
+
+        // Ensure WooCommerce is loaded
+        if (!function_exists('WC') || !WC()) {
+            return;
+        }
+
+        // Load cart functionality
+        if (WC()->cart === null) {
+            WC()->frontend_includes();
+            WC()->session = new WC_Session_Handler();
+            WC()->session->init();
+            WC()->cart = new WC_Cart();
+            WC()->customer = new WC_Customer(get_current_user_id(), true);
+        }
     }
 
     /**
@@ -240,9 +273,16 @@ class VVA_AJAX {
             wp_send_json_error(array('message' => __('This product cannot be purchased.', 'valley-virtual-assistant')));
         }
 
-        // Verify cart is available
+        // Verify cart is available - if not, try to initialize it
         if (!WC()->cart) {
-            wp_send_json_error(array('message' => __('Cart is not available.', 'valley-virtual-assistant')));
+            if (function_exists('wc_load_cart')) {
+                wc_load_cart();
+            }
+
+            if (!WC()->cart) {
+                error_log('VVA: WooCommerce cart not available during add_to_cart AJAX request');
+                wp_send_json_error(array('message' => __('Cart is not available. Please refresh the page and try again.', 'valley-virtual-assistant')));
+            }
         }
 
         // Add to cart

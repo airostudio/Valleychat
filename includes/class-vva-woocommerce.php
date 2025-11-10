@@ -154,6 +154,22 @@ class VVA_WooCommerce {
             return new WP_Error('invalid_product', __('Product not found.', 'valley-virtual-assistant'));
         }
 
+        // Get product image - use multiple fallback methods
+        $image_id = $product->get_image_id();
+        $image_url = '';
+
+        if ($image_id) {
+            $image_url = wp_get_attachment_image_url($image_id, 'woocommerce_thumbnail');
+            if (!$image_url) {
+                $image_url = wp_get_attachment_url($image_id);
+            }
+        }
+
+        // Fallback to placeholder if no image found
+        if (!$image_url) {
+            $image_url = wc_placeholder_img_src('woocommerce_thumbnail');
+        }
+
         $product_data = array(
             'id' => $product->get_id(),
             'name' => $product->get_name(),
@@ -172,7 +188,7 @@ class VVA_WooCommerce {
             'rating' => $product->get_average_rating(),
             'review_count' => $product->get_review_count(),
             'url' => $product->get_permalink(),
-            'image' => wp_get_attachment_url($product->get_image_id()),
+            'image' => $image_url,
         );
 
         // Add variation data for variable products
@@ -262,6 +278,19 @@ class VVA_WooCommerce {
                 $product = wc_get_product($product_id);
 
                 if ($product) {
+                    // Get product image with fallback
+                    $image_id = $product->get_image_id();
+                    $image_url = '';
+                    if ($image_id) {
+                        $image_url = wp_get_attachment_image_url($image_id, 'woocommerce_thumbnail');
+                        if (!$image_url) {
+                            $image_url = wp_get_attachment_url($image_id);
+                        }
+                    }
+                    if (!$image_url) {
+                        $image_url = wc_placeholder_img_src('woocommerce_thumbnail');
+                    }
+
                     $products[] = array(
                         'id' => $product->get_id(),
                         'name' => $product->get_name(),
@@ -272,7 +301,7 @@ class VVA_WooCommerce {
                         'short_description' => wp_trim_words($product->get_short_description(), 20),
                         'categories' => $this->get_product_categories($product),
                         'url' => $product->get_permalink(),
-                        'image' => wp_get_attachment_url($product->get_image_id()),
+                        'image' => $image_url,
                     );
                 }
             }

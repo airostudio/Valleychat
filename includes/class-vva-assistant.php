@@ -182,7 +182,7 @@ Remember: Your goal is to make customers feel comfortable and confident in their
         );
 
         // Make API request
-        $api_url = 'https://generativelanguage.googleapis.com/v1beta/models/' . $this->model . ':generateContent?key=' . $this->api_key;
+        $api_url = 'https://generativelanguage.googleapis.com/v1/models/' . $this->model . ':generateContent?key=' . $this->api_key;
 
         $response = wp_remote_post($api_url, array(
             'timeout' => 30,

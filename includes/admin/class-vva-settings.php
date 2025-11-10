@@ -47,9 +47,6 @@ class VVA_Settings {
         register_setting('vva_general_settings', 'vva_welcome_message');
 
         // AI Settings
-        register_setting('vva_ai_settings', 'vva_ai_provider');
-        register_setting('vva_ai_settings', 'vva_anthropic_api_key');
-        register_setting('vva_ai_settings', 'vva_anthropic_model');
         register_setting('vva_ai_settings', 'vva_gemini_api_key');
         register_setting('vva_ai_settings', 'vva_gemini_model');
         register_setting('vva_ai_settings', 'vva_max_tokens');
@@ -196,29 +193,13 @@ class VVA_Settings {
         <table class="form-table">
             <tr>
                 <th scope="row">
-                    <label for="vva_ai_provider"><?php _e('AI Provider', 'valley-virtual-assistant'); ?></label>
-                </th>
-                <td>
-                    <select id="vva_ai_provider" name="vva_ai_provider" onchange="vvaToggleProviderSettings(this.value)">
-                        <option value="gemini" <?php selected(get_option('vva_ai_provider', 'gemini'), 'gemini'); ?>>Google Gemini (Recommended)</option>
-                        <option value="anthropic" <?php selected(get_option('vva_ai_provider', 'gemini'), 'anthropic'); ?>>Anthropic (Claude)</option>
-                    </select>
-                    <p class="description"><?php _e('Choose your AI provider', 'valley-virtual-assistant'); ?></p>
-                </td>
-            </tr>
-        </table>
-
-        <!-- Gemini Settings -->
-        <table class="form-table vva-provider-settings" id="vva-gemini-settings" style="display: <?php echo get_option('vva_ai_provider', 'gemini') === 'gemini' ? 'table' : 'none'; ?>;">
-            <tr>
-                <th scope="row">
-                    <label for="vva_gemini_api_key"><?php _e('Gemini API Key', 'valley-virtual-assistant'); ?></label>
+                    <label for="vva_gemini_api_key"><?php _e('Google Gemini API Key', 'valley-virtual-assistant'); ?></label>
                 </th>
                 <td>
                     <input type="password" id="vva_gemini_api_key" name="vva_gemini_api_key" value="<?php echo esc_attr(get_option('vva_gemini_api_key', '')); ?>" class="large-text">
                     <p class="description">
                         <?php _e('Get your API key from', 'valley-virtual-assistant'); ?>
-                        <a href="https://makersuite.google.com/app/apikey" target="_blank">Google AI Studio</a>
+                        <a href="https://aistudio.google.com/app/apikey" target="_blank">Google AI Studio</a>
                     </p>
                 </td>
             </tr>
@@ -228,58 +209,19 @@ class VVA_Settings {
                 </th>
                 <td>
                     <select id="vva_gemini_model" name="vva_gemini_model">
-                        <option value="gemini-1.5-pro-latest" <?php selected(get_option('vva_gemini_model', 'gemini-1.5-pro-latest'), 'gemini-1.5-pro-latest'); ?>>
-                            Gemini 1.5 Pro (Recommended)
+                        <option value="gemini-pro" <?php selected(get_option('vva_gemini_model', 'gemini-pro'), 'gemini-pro'); ?>>
+                            Gemini Pro (Recommended - Stable & Cost-Effective)
                         </option>
-                        <option value="gemini-1.5-flash-latest" <?php selected(get_option('vva_gemini_model', 'gemini-1.5-pro-latest'), 'gemini-1.5-flash-latest'); ?>>
+                        <option value="gemini-1.5-pro" <?php selected(get_option('vva_gemini_model', 'gemini-pro'), 'gemini-1.5-pro'); ?>>
+                            Gemini 1.5 Pro (Latest)
+                        </option>
+                        <option value="gemini-1.5-flash" <?php selected(get_option('vva_gemini_model', 'gemini-pro'), 'gemini-1.5-flash'); ?>>
                             Gemini 1.5 Flash (Fastest)
                         </option>
-                        <option value="gemini-pro" <?php selected(get_option('vva_gemini_model', 'gemini-1.5-pro-latest'), 'gemini-pro'); ?>>
-                            Gemini Pro
-                        </option>
                     </select>
-                    <p class="description"><?php _e('Choose the Gemini model to use', 'valley-virtual-assistant'); ?></p>
+                    <p class="description"><?php _e('Choose the Gemini model - Gemini Pro is stable and cost-effective', 'valley-virtual-assistant'); ?></p>
                 </td>
             </tr>
-        </table>
-
-        <!-- Anthropic Settings -->
-        <table class="form-table vva-provider-settings" id="vva-anthropic-settings" style="display: <?php echo get_option('vva_ai_provider', 'gemini') === 'anthropic' ? 'table' : 'none'; ?>;">
-            <tr>
-                <th scope="row">
-                    <label for="vva_anthropic_api_key"><?php _e('Anthropic API Key', 'valley-virtual-assistant'); ?></label>
-                </th>
-                <td>
-                    <input type="password" id="vva_anthropic_api_key" name="vva_anthropic_api_key" value="<?php echo esc_attr(get_option('vva_anthropic_api_key', '')); ?>" class="large-text">
-                    <p class="description">
-                        <?php _e('Get your API key from', 'valley-virtual-assistant'); ?>
-                        <a href="https://console.anthropic.com/" target="_blank">Anthropic Console</a>
-                    </p>
-                </td>
-            </tr>
-            <tr>
-                <th scope="row">
-                    <label for="vva_anthropic_model"><?php _e('Model', 'valley-virtual-assistant'); ?></label>
-                </th>
-                <td>
-                    <select id="vva_anthropic_model" name="vva_anthropic_model">
-                        <option value="claude-3-5-sonnet-20240620" <?php selected(get_option('vva_anthropic_model'), 'claude-3-5-sonnet-20240620'); ?>>
-                            Claude 3.5 Sonnet (Recommended)
-                        </option>
-                        <option value="claude-3-opus-20240229" <?php selected(get_option('vva_anthropic_model'), 'claude-3-opus-20240229'); ?>>
-                            Claude 3 Opus
-                        </option>
-                        <option value="claude-3-haiku-20240307" <?php selected(get_option('vva_anthropic_model'), 'claude-3-haiku-20240307'); ?>>
-                            Claude 3 Haiku (Fastest)
-                        </option>
-                    </select>
-                    <p class="description"><?php _e('Choose the Claude model to use', 'valley-virtual-assistant'); ?></p>
-                </td>
-            </tr>
-        </table>
-
-        <!-- Common Settings -->
-        <table class="form-table">
             <tr>
                 <th scope="row">
                     <label for="vva_max_tokens"><?php _e('Max Tokens', 'valley-virtual-assistant'); ?></label>
@@ -305,21 +247,6 @@ class VVA_Settings {
             </button>
             <span id="vva-test-result"></span>
         </div>
-
-        <script>
-        function vvaToggleProviderSettings(provider) {
-            var geminiSettings = document.getElementById('vva-gemini-settings');
-            var anthropicSettings = document.getElementById('vva-anthropic-settings');
-
-            if (provider === 'gemini') {
-                geminiSettings.style.display = 'table';
-                anthropicSettings.style.display = 'none';
-            } else {
-                geminiSettings.style.display = 'none';
-                anthropicSettings.style.display = 'table';
-            }
-        }
-        </script>
         <?php
     }
 

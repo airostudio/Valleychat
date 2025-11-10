@@ -53,16 +53,9 @@ class VVA_Assistant {
      * Constructor
      */
     private function __construct() {
-        $this->provider = get_option('vva_ai_provider', 'gemini');
-
-        if ($this->provider === 'gemini') {
-            $this->api_key = get_option('vva_gemini_api_key');
-            $this->model = get_option('vva_gemini_model', 'gemini-1.5-pro-latest');
-        } else {
-            $this->api_key = get_option('vva_anthropic_api_key');
-            $this->model = get_option('vva_anthropic_model', 'claude-3-5-sonnet-20240620');
-        }
-
+        $this->provider = 'gemini';
+        $this->api_key = get_option('vva_gemini_api_key');
+        $this->model = get_option('vva_gemini_model', 'gemini-pro');
         $this->system_prompt = $this->build_system_prompt();
     }
 
@@ -159,7 +152,7 @@ Remember: Your goal is to make customers feel comfortable and confident in their
     }
 
     /**
-     * Get response from AI provider
+     * Get response from Gemini AI
      *
      * @param string $user_message User's message
      * @param array $conversation_history Previous messages
@@ -168,20 +161,9 @@ Remember: Your goal is to make customers feel comfortable and confident in their
      */
     public function get_response($user_message, $conversation_history = array(), $context = array()) {
         if (empty($this->api_key)) {
-            return new WP_Error('no_api_key', __('API key is not configured.', 'valley-virtual-assistant'));
+            return new WP_Error('no_api_key', __('Gemini API key is not configured.', 'valley-virtual-assistant'));
         }
 
-        if ($this->provider === 'gemini') {
-            return $this->get_gemini_response($user_message, $conversation_history, $context);
-        } else {
-            return $this->get_anthropic_response($user_message, $conversation_history, $context);
-        }
-    }
-
-    /**
-     * Get response from Gemini AI
-     */
-    private function get_gemini_response($user_message, $conversation_history, $context) {
         // Build messages for Gemini
         $contents = $this->build_gemini_messages($user_message, $conversation_history, $context);
 
@@ -231,90 +213,6 @@ Remember: Your goal is to make customers feel comfortable and confident in their
         );
     }
 
-    /**
-     * Get response from Anthropic Claude AI
-     */
-    private function get_anthropic_response($user_message, $conversation_history, $context) {
-        // Build messages array
-        $messages = $this->build_messages($user_message, $conversation_history, $context);
-
-        // Prepare API request
-        $body = array(
-            'model' => $this->model,
-            'max_tokens' => (int) get_option('vva_max_tokens', 4096),
-            'temperature' => (float) get_option('vva_temperature', 0.7),
-            'system' => $this->system_prompt,
-            'messages' => $messages,
-        );
-
-        // Add context as tool if available
-        if (!empty($context)) {
-            $body['tools'] = $this->build_tools($context);
-        }
-
-        // Make API request
-        $response = wp_remote_post('https://api.anthropic.com/v1/messages', array(
-            'timeout' => 30,
-            'headers' => array(
-                'Content-Type' => 'application/json',
-                'x-api-key' => $this->api_key,
-                'anthropic-version' => '2023-06-01',
-            ),
-            'body' => json_encode($body),
-        ));
-
-        if (is_wp_error($response)) {
-            return $response;
-        }
-
-        $response_code = wp_remote_retrieve_response_code($response);
-        $response_body = wp_remote_retrieve_body($response);
-        $data = json_decode($response_body, true);
-
-        if ($response_code !== 200) {
-            $error_message = isset($data['error']['message']) ? $data['error']['message'] : __('Unknown API error', 'valley-virtual-assistant');
-            return new WP_Error('api_error', $error_message, array('status' => $response_code));
-        }
-
-        return array(
-            'content' => $this->extract_content($data),
-            'usage' => isset($data['usage']) ? $data['usage'] : array(),
-            'model' => isset($data['model']) ? $data['model'] : $this->model,
-            'raw_response' => $data,
-        );
-    }
-
-    /**
-     * Build messages array for API
-     */
-    private function build_messages($user_message, $conversation_history, $context) {
-        $messages = array();
-
-        // Add conversation history
-        foreach ($conversation_history as $message) {
-            $messages[] = array(
-                'role' => $message['role'],
-                'content' => $message['content'],
-            );
-        }
-
-        // Add context information to user message if available
-        $enhanced_message = $user_message;
-        if (!empty($context)) {
-            $context_info = $this->format_context($context);
-            if (!empty($context_info)) {
-                $enhanced_message = $user_message . "\n\n" . $context_info;
-            }
-        }
-
-        // Add current user message
-        $messages[] = array(
-            'role' => 'user',
-            'content' => $enhanced_message,
-        );
-
-        return $messages;
-    }
 
     /**
      * Format context for inclusion in message
@@ -451,23 +349,6 @@ Remember: Your goal is to make customers feel comfortable and confident in their
                 }
                 return implode("\n", $text_parts);
             }
-        }
-
-        return '';
-    }
-
-    /**
-     * Extract content from Anthropic API response
-     */
-    private function extract_content($data) {
-        if (isset($data['content']) && is_array($data['content'])) {
-            $text_parts = array();
-            foreach ($data['content'] as $block) {
-                if (isset($block['type']) && $block['type'] === 'text') {
-                    $text_parts[] = $block['text'];
-                }
-            }
-            return implode("\n", $text_parts);
         }
 
         return '';

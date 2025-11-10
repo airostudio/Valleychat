@@ -131,10 +131,13 @@ class VVA_Chat_Widget {
                 <!-- Typing Indicator -->
                 <div id="vva-typing-indicator" class="vva-typing-indicator" style="display: none;">
                     <img src="<?php echo esc_url($avatar); ?>" alt="" class="vva-message-avatar">
-                    <div class="vva-typing-dots">
-                        <span></span>
-                        <span></span>
-                        <span></span>
+                    <div class="vva-typing-content">
+                        <span class="vva-typing-message"></span>
+                        <div class="vva-typing-dots">
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                        </div>
                     </div>
                 </div>
 

@@ -13,6 +13,17 @@
             this.isTyping = false;
             this.ageVerified = this.checkAgeVerification();
 
+            // Fun loading messages
+            this.loadingMessages = [
+                "Just popping out to the warehouse...",
+                "Checking our stock for you...",
+                "Let me grab that information...",
+                "Searching through our collection...",
+                "Finding the perfect match...",
+                "Looking that up right now...",
+                "Give me just a sec..."
+            ];
+
             this.init();
         }
 
@@ -279,6 +290,11 @@
 
         showTypingIndicator() {
             this.isTyping = true;
+
+            // Get random loading message
+            const randomMessage = this.loadingMessages[Math.floor(Math.random() * this.loadingMessages.length)];
+            this.$typingIndicator.find('.vva-typing-message').text(randomMessage);
+
             this.$typingIndicator.show();
             this.scrollToBottom();
         }

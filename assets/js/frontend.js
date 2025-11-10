@@ -313,6 +313,8 @@
         }
 
         createProductCard(product) {
+            console.log('VVA: Creating product card for:', product);
+
             const $card = $('<div>', {
                 class: 'vva-product-card',
                 'data-product-id': product.id
@@ -323,10 +325,19 @@
                 class: 'vva-product-image'
             });
             if (product.image) {
+                console.log('VVA: Product image URL:', product.image);
                 $image.append($('<img>', {
                     src: product.image,
-                    alt: product.name
+                    alt: product.name,
+                    onerror: function() {
+                        console.error('VVA: Failed to load image:', product.image);
+                        $(this).attr('src', 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"%3E%3Crect fill="%23f0f0f0" width="200" height="200"/%3E%3Ctext x="50%25" y="50%25" text-anchor="middle" dy=".3em" fill="%23999" font-family="Arial" font-size="14"%3ENo Image%3C/text%3E%3C/svg%3E');
+                    }
                 }));
+            } else {
+                console.warn('VVA: No image URL for product:', product.id, product.name);
+                // Add placeholder
+                $image.html('<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:#999;font-size:14px;">No Image Available</div>');
             }
             $card.append($image);
 

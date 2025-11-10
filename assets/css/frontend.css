@@ -588,9 +588,9 @@
 
 /* Product Cards */
 .vva-products-container {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
     margin-top: 12px;
     width: 100%;
 }
@@ -731,41 +731,46 @@
 
 /* Product Cards in Message */
 .vva-message-assistant .vva-products-container {
+    width: 100%;
+    margin-left: 0;
     max-width: 100%;
-    margin-left: 42px;
 }
 
 /* Tablet Product Cards */
 @media (max-width: 768px) {
     .vva-products-container {
-        grid-template-columns: 1fr;
         gap: 12px;
     }
 
     .vva-message-assistant .vva-products-container {
-        margin-left: 42px;
+        margin-left: 0;
+    }
+
+    .vva-product-image {
+        height: 200px;
     }
 }
 
 /* Mobile Product Cards */
 @media (max-width: 480px) {
     .vva-products-container {
-        grid-template-columns: 1fr;
         gap: 10px;
         margin-left: 0;
     }
 
     .vva-product-card {
         max-width: 100%;
+        width: 100%;
     }
 
     .vva-product-image {
-        height: 160px;
+        height: 180px;
     }
 
     .vva-message-assistant .vva-products-container {
         max-width: 100%;
         margin-left: 0;
+        width: 100%;
     }
 
     .vva-product-name {

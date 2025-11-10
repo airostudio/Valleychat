@@ -199,6 +199,11 @@ final class Valley_Virtual_Assistant {
             'position' => get_option('vva_widget_position', 'bottom-right'),
             'welcomeMessage' => get_option('vva_welcome_message', 'Hi! I\'m Sophie, your personal shopping assistant. How can I help you today?'),
         ));
+
+        // Ensure viewport meta tag for mobile
+        add_action('wp_head', function() {
+            echo '<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">' . "\n";
+        }, 1);
     }
 
     /**

@@ -2,8 +2,8 @@
 /**
  * Plugin Name: Valley Virtual Assistant
  * Plugin URI: https://valleyofthedolls.com.au
- * Description: AI-powered virtual assistant for adult toy store with WooCommerce integration
- * Version: 1.0.0
+ * Description: AI-powered virtual assistant for WooCommerce stores - handles product recommendations, cart management, and customer service
+ * Version: 1.0.1
  * Author: Valley of the Dolls
  * Author URI: https://valleyofthedolls.com.au
  * License: GPL v2 or later
@@ -12,8 +12,9 @@
  * Domain Path: /languages
  * Requires at least: 6.0
  * Requires PHP: 7.4
+ * Requires Plugins: woocommerce
  * WC requires at least: 7.0
- * WC tested up to: 8.5
+ * WC tested up to: 9.0
  */
 
 // Exit if accessed directly
@@ -22,7 +23,7 @@ if (!defined('ABSPATH')) {
 }
 
 // Define plugin constants
-define('VVA_VERSION', '1.0.0');
+define('VVA_VERSION', '1.0.1');
 define('VVA_PLUGIN_FILE', __FILE__);
 define('VVA_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('VVA_PLUGIN_URL', plugin_dir_url(__FILE__));
@@ -65,9 +66,13 @@ final class Valley_Virtual_Assistant {
 
         add_action('before_woocommerce_init', array($this, 'declare_woocommerce_compatibility'));
         add_action('plugins_loaded', array($this, 'check_dependencies'));
+        add_action('woocommerce_init', array($this, 'woocommerce_init'));
         add_action('init', array($this, 'init'), 0);
         add_action('wp_enqueue_scripts', array($this, 'enqueue_frontend_assets'));
         add_action('admin_enqueue_scripts', array($this, 'enqueue_admin_assets'));
+
+        // WooCommerce cart fragments support
+        add_filter('woocommerce_add_to_cart_fragments', array($this, 'cart_fragments'));
     }
 
     /**
@@ -75,7 +80,11 @@ final class Valley_Virtual_Assistant {
      */
     public function declare_woocommerce_compatibility() {
         if (class_exists('\Automattic\WooCommerce\Utilities\FeaturesUtil')) {
+            // Declare HPOS compatibility
             \Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility('custom_order_tables', __FILE__, true);
+
+            // Declare cart/checkout blocks compatibility
+            \Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility('cart_checkout_blocks', __FILE__, true);
         }
     }
 
@@ -122,6 +131,27 @@ final class Valley_Virtual_Assistant {
             <p><?php _e('Valley Virtual Assistant requires WooCommerce to be installed and active.', 'valley-virtual-assistant'); ?></p>
         </div>
         <?php
+    }
+
+    /**
+     * WooCommerce initialization
+     */
+    public function woocommerce_init() {
+        // Ensure WooCommerce session is started for cart functionality
+        if (!is_admin() && !WC()->session->has_session()) {
+            WC()->session->set_customer_session_cookie(true);
+        }
+    }
+
+    /**
+     * Add cart fragments for AJAX cart updates
+     */
+    public function cart_fragments($fragments) {
+        // Add cart count to fragments
+        $fragments['vva_cart_count'] = WC()->cart->get_cart_contents_count();
+        $fragments['vva_cart_total'] = WC()->cart->get_cart_total();
+
+        return $fragments;
     }
 
     /**

@@ -63,10 +63,20 @@ final class Valley_Virtual_Assistant {
         register_activation_hook(__FILE__, array($this, 'activate'));
         register_deactivation_hook(__FILE__, array($this, 'deactivate'));
 
+        add_action('before_woocommerce_init', array($this, 'declare_woocommerce_compatibility'));
         add_action('plugins_loaded', array($this, 'check_dependencies'));
         add_action('init', array($this, 'init'), 0);
         add_action('wp_enqueue_scripts', array($this, 'enqueue_frontend_assets'));
         add_action('admin_enqueue_scripts', array($this, 'enqueue_admin_assets'));
+    }
+
+    /**
+     * Declare WooCommerce HPOS compatibility
+     */
+    public function declare_woocommerce_compatibility() {
+        if (class_exists('\Automattic\WooCommerce\Utilities\FeaturesUtil')) {
+            \Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility('custom_order_tables', __FILE__, true);
+        }
     }
 
     /**

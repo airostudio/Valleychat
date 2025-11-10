@@ -227,6 +227,15 @@
 
             $message.append($content);
 
+            // Add quick reply buttons if message contains button tags
+            if (role === 'assistant') {
+                const buttons = this.extractButtons(content);
+                if (buttons.length > 0) {
+                    const $buttonsContainer = this.createQuickButtons(buttons);
+                    $message.append($buttonsContainer);
+                }
+            }
+
             // Add product cards if products exist
             if (role === 'assistant' && products && products.length > 0) {
                 const $productsContainer = $('<div>', {
@@ -248,6 +257,9 @@
         formatMessage(content) {
             // Strip [PRODUCT:id] tags (they're rendered as cards instead)
             let formatted = content.replace(/\[PRODUCT:\d+\]/g, '');
+
+            // Strip [BUTTON:text] tags (they're rendered as buttons instead)
+            formatted = formatted.replace(/\[BUTTON:[^\]]+\]/g, '');
 
             // Convert line breaks
             formatted = formatted.replace(/\n/g, '<br>');
@@ -405,6 +417,45 @@
                     $button.text(originalText).removeClass('error').prop('disabled', false);
                 }, 2000);
             }
+        }
+
+        extractButtons(content) {
+            // Extract button patterns like [BUTTON:Yes] or [BUTTON:No, thanks]
+            const buttonRegex = /\[BUTTON:([^\]]+)\]/g;
+            const buttons = [];
+            let match;
+
+            while ((match = buttonRegex.exec(content)) !== null) {
+                buttons.push(match[1].trim());
+            }
+
+            return buttons;
+        }
+
+        createQuickButtons(buttons) {
+            const $container = $('<div>', {
+                class: 'vva-quick-buttons'
+            });
+
+            buttons.forEach(buttonText => {
+                const $button = $('<button>', {
+                    class: 'vva-quick-button',
+                    text: buttonText
+                });
+
+                $button.on('click', () => {
+                    // Send button text as message
+                    this.$input.val(buttonText);
+                    this.$form.submit();
+
+                    // Disable all buttons after click
+                    $container.find('.vva-quick-button').prop('disabled', true).addClass('clicked');
+                });
+
+                $container.append($button);
+            });
+
+            return $container;
         }
 
         formatPrice(price) {

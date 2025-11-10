@@ -47,8 +47,8 @@ class VVA_Settings {
         register_setting('vva_general_settings', 'vva_welcome_message');
 
         // AI Settings
-        register_setting('vva_ai_settings', 'vva_gemini_api_key');
-        register_setting('vva_ai_settings', 'vva_gemini_model');
+        register_setting('vva_ai_settings', 'vva_openai_api_key');
+        register_setting('vva_ai_settings', 'vva_openai_model');
         register_setting('vva_ai_settings', 'vva_max_tokens');
         register_setting('vva_ai_settings', 'vva_temperature');
 
@@ -193,33 +193,36 @@ class VVA_Settings {
         <table class="form-table">
             <tr>
                 <th scope="row">
-                    <label for="vva_gemini_api_key"><?php _e('Google Gemini API Key', 'valley-virtual-assistant'); ?></label>
+                    <label for="vva_openai_api_key"><?php _e('OpenAI API Key', 'valley-virtual-assistant'); ?></label>
                 </th>
                 <td>
-                    <input type="password" id="vva_gemini_api_key" name="vva_gemini_api_key" value="<?php echo esc_attr(get_option('vva_gemini_api_key', '')); ?>" class="large-text">
+                    <input type="password" id="vva_openai_api_key" name="vva_openai_api_key" value="<?php echo esc_attr(get_option('vva_openai_api_key', '')); ?>" class="large-text">
                     <p class="description">
                         <?php _e('Get your API key from', 'valley-virtual-assistant'); ?>
-                        <a href="https://aistudio.google.com/app/apikey" target="_blank">Google AI Studio</a>
+                        <a href="https://platform.openai.com/api-keys" target="_blank">OpenAI Platform</a>
                     </p>
                 </td>
             </tr>
             <tr>
                 <th scope="row">
-                    <label for="vva_gemini_model"><?php _e('Model', 'valley-virtual-assistant'); ?></label>
+                    <label for="vva_openai_model"><?php _e('Model', 'valley-virtual-assistant'); ?></label>
                 </th>
                 <td>
-                    <select id="vva_gemini_model" name="vva_gemini_model">
-                        <option value="gemini-pro" <?php selected(get_option('vva_gemini_model', 'gemini-pro'), 'gemini-pro'); ?>>
-                            Gemini Pro (Recommended - Stable & Cost-Effective)
+                    <select id="vva_openai_model" name="vva_openai_model">
+                        <option value="gpt-3.5-turbo" <?php selected(get_option('vva_openai_model', 'gpt-3.5-turbo'), 'gpt-3.5-turbo'); ?>>
+                            GPT-3.5 Turbo (Recommended - Fast & Cost-Effective)
                         </option>
-                        <option value="gemini-1.5-pro" <?php selected(get_option('vva_gemini_model', 'gemini-pro'), 'gemini-1.5-pro'); ?>>
-                            Gemini 1.5 Pro (Latest)
+                        <option value="gpt-4" <?php selected(get_option('vva_openai_model', 'gpt-3.5-turbo'), 'gpt-4'); ?>>
+                            GPT-4 (Most Capable)
                         </option>
-                        <option value="gemini-1.5-flash" <?php selected(get_option('vva_gemini_model', 'gemini-pro'), 'gemini-1.5-flash'); ?>>
-                            Gemini 1.5 Flash (Fastest)
+                        <option value="gpt-4-turbo" <?php selected(get_option('vva_openai_model', 'gpt-3.5-turbo'), 'gpt-4-turbo'); ?>>
+                            GPT-4 Turbo (Latest & Faster)
+                        </option>
+                        <option value="gpt-4o" <?php selected(get_option('vva_openai_model', 'gpt-3.5-turbo'), 'gpt-4o'); ?>>
+                            GPT-4o (Omni - Multimodal)
                         </option>
                     </select>
-                    <p class="description"><?php _e('Choose the Gemini model - Gemini Pro is stable and cost-effective', 'valley-virtual-assistant'); ?></p>
+                    <p class="description"><?php _e('Choose the ChatGPT model - GPT-3.5 Turbo is fast and cost-effective', 'valley-virtual-assistant'); ?></p>
                 </td>
             </tr>
             <tr>

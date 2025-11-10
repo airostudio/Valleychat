@@ -53,9 +53,9 @@ class VVA_Assistant {
      * Constructor
      */
     private function __construct() {
-        $this->provider = 'gemini';
-        $this->api_key = get_option('vva_gemini_api_key');
-        $this->model = get_option('vva_gemini_model', 'gemini-pro');
+        $this->provider = 'openai';
+        $this->api_key = get_option('vva_openai_api_key');
+        $this->model = get_option('vva_openai_model', 'gpt-3.5-turbo');
         $this->system_prompt = $this->build_system_prompt();
     }
 
@@ -152,7 +152,7 @@ Remember: Your goal is to make customers feel comfortable and confident in their
     }
 
     /**
-     * Get response from Gemini AI
+     * Get response from OpenAI ChatGPT
      *
      * @param string $user_message User's message
      * @param array $conversation_history Previous messages
@@ -161,28 +161,26 @@ Remember: Your goal is to make customers feel comfortable and confident in their
      */
     public function get_response($user_message, $conversation_history = array(), $context = array()) {
         if (empty($this->api_key)) {
-            return new WP_Error('no_api_key', __('Gemini API key is not configured.', 'valley-virtual-assistant'));
+            return new WP_Error('no_api_key', __('OpenAI API key is not configured.', 'valley-virtual-assistant'));
         }
 
-        // Build messages for Gemini
-        $contents = $this->build_gemini_messages($user_message, $conversation_history, $context);
+        // Build messages for OpenAI
+        $messages = $this->build_openai_messages($user_message, $conversation_history, $context);
 
         // Prepare API request
         $body = array(
-            'contents' => $contents,
-            'generationConfig' => array(
-                'temperature' => (float) get_option('vva_temperature', 0.7),
-                'maxOutputTokens' => (int) get_option('vva_max_tokens', 4096),
-            ),
+            'model' => $this->model,
+            'messages' => $messages,
+            'temperature' => (float) get_option('vva_temperature', 0.7),
+            'max_tokens' => (int) get_option('vva_max_tokens', 4096),
         );
 
         // Make API request
-        $api_url = 'https://generativelanguage.googleapis.com/v1/models/' . $this->model . ':generateContent?key=' . $this->api_key;
-
-        $response = wp_remote_post($api_url, array(
+        $response = wp_remote_post('https://api.openai.com/v1/chat/completions', array(
             'timeout' => 30,
             'headers' => array(
                 'Content-Type' => 'application/json',
+                'Authorization' => 'Bearer ' . $this->api_key,
             ),
             'body' => json_encode($body),
         ));
@@ -201,9 +199,9 @@ Remember: Your goal is to make customers feel comfortable and confident in their
         }
 
         return array(
-            'content' => $this->extract_gemini_content($data),
-            'usage' => isset($data['usageMetadata']) ? $data['usageMetadata'] : array(),
-            'model' => $this->model,
+            'content' => $this->extract_openai_content($data),
+            'usage' => isset($data['usage']) ? $data['usage'] : array(),
+            'model' => isset($data['model']) ? $data['model'] : $this->model,
             'raw_response' => $data,
         );
     }
@@ -293,35 +291,22 @@ Remember: Your goal is to make customers feel comfortable and confident in their
     }
 
     /**
-     * Build messages for Gemini API
+     * Build messages for OpenAI API
      */
-    private function build_gemini_messages($user_message, $conversation_history, $context) {
-        $contents = array();
+    private function build_openai_messages($user_message, $conversation_history, $context) {
+        $messages = array();
 
-        // If this is the first message (no history), prepend system prompt
-        if (empty($conversation_history)) {
-            $contents[] = array(
-                'role' => 'user',
-                'parts' => array(
-                    array('text' => $this->system_prompt)
-                )
-            );
-            $contents[] = array(
-                'role' => 'model',
-                'parts' => array(
-                    array('text' => 'Understood. I am Sophie, your friendly virtual shopping assistant for Valley of the Dolls. I\'m here to help you find the perfect products confidently and professionally. How can I assist you today?')
-                )
-            );
-        }
+        // Add system prompt as first message
+        $messages[] = array(
+            'role' => 'system',
+            'content' => $this->system_prompt,
+        );
 
         // Add conversation history
         foreach ($conversation_history as $message) {
-            $role = ($message['role'] === 'assistant') ? 'model' : 'user';
-            $contents[] = array(
-                'role' => $role,
-                'parts' => array(
-                    array('text' => $message['content'])
-                )
+            $messages[] = array(
+                'role' => $message['role'],
+                'content' => $message['content'],
             );
         }
 
@@ -335,30 +320,22 @@ Remember: Your goal is to make customers feel comfortable and confident in their
         }
 
         // Add current user message
-        $contents[] = array(
+        $messages[] = array(
             'role' => 'user',
-            'parts' => array(
-                array('text' => $enhanced_message)
-            )
+            'content' => $enhanced_message,
         );
 
-        return $contents;
+        return $messages;
     }
 
     /**
-     * Extract content from Gemini API response
+     * Extract content from OpenAI API response
      */
-    private function extract_gemini_content($data) {
-        if (isset($data['candidates']) && is_array($data['candidates']) && !empty($data['candidates'])) {
-            $candidate = $data['candidates'][0];
-            if (isset($candidate['content']['parts']) && is_array($candidate['content']['parts'])) {
-                $text_parts = array();
-                foreach ($candidate['content']['parts'] as $part) {
-                    if (isset($part['text'])) {
-                        $text_parts[] = $part['text'];
-                    }
-                }
-                return implode("\n", $text_parts);
+    private function extract_openai_content($data) {
+        if (isset($data['choices']) && is_array($data['choices']) && !empty($data['choices'])) {
+            $choice = $data['choices'][0];
+            if (isset($choice['message']['content'])) {
+                return $choice['message']['content'];
             }
         }
 

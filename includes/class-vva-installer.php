@@ -116,8 +116,8 @@ class VVA_Installer {
             'vva_welcome_message' => 'Hi! I\'m Sophie, your personal shopping assistant. I\'m here to help you explore our products and find exactly what you\'re looking for. How can I help you today?',
 
             // AI Settings
-            'vva_gemini_api_key' => '',
-            'vva_gemini_model' => 'gemini-pro',
+            'vva_openai_api_key' => '',
+            'vva_openai_model' => 'gpt-3.5-turbo',
             'vva_max_tokens' => 4096,
             'vva_temperature' => 0.7,
 

@@ -186,7 +186,15 @@ final class Valley_Virtual_Assistant {
      * Enqueue frontend assets
      */
     public function enqueue_frontend_assets() {
+        // Enqueue styles
         wp_enqueue_style('vva-frontend', VVA_PLUGIN_URL . 'assets/css/frontend.css', array(), VVA_VERSION);
+
+        // Ensure jQuery is loaded
+        if (!wp_script_is('jquery', 'enqueued')) {
+            wp_enqueue_script('jquery');
+        }
+
+        // Enqueue our script in footer with jQuery dependency
         wp_enqueue_script('vva-frontend', VVA_PLUGIN_URL . 'assets/js/frontend.js', array('jquery'), VVA_VERSION, true);
 
         // Localize script
@@ -204,6 +212,29 @@ final class Valley_Virtual_Assistant {
         add_action('wp_head', function() {
             echo '<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">' . "\n";
         }, 1);
+
+        // Prevent minification/combination plugins from breaking our scripts
+        add_filter('wpo_minify_excluded_js', array($this, 'exclude_from_minification'));
+        add_filter('autoptimize_filter_js_exclude', array($this, 'exclude_from_autoptimize'));
+    }
+
+    /**
+     * Exclude our scripts from WP Optimize minification
+     */
+    public function exclude_from_minification($excluded) {
+        if (!is_array($excluded)) {
+            $excluded = array();
+        }
+        $excluded[] = 'vva-frontend';
+        $excluded[] = 'valley-virtual-assistant';
+        return $excluded;
+    }
+
+    /**
+     * Exclude our scripts from Autoptimize
+     */
+    public function exclude_from_autoptimize($exclude) {
+        return $exclude . ', vva-frontend, valley-virtual-assistant';
     }
 
     /**

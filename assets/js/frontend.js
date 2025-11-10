@@ -5,6 +5,14 @@
 (function($) {
     'use strict';
 
+    // Check if jQuery is available
+    if (typeof $ === 'undefined' || typeof jQuery === 'undefined') {
+        console.error('VVA: jQuery is not loaded!');
+        return;
+    }
+
+    console.log('VVA: Initializing Valley Virtual Assistant...');
+
     // Valley Virtual Assistant Class
     class ValleyVirtualAssistant {
         constructor() {
@@ -525,9 +533,19 @@
 
     // Initialize when document is ready
     $(document).ready(function() {
+        console.log('VVA: DOM ready, checking for widget...');
+
         // Only initialize if widget exists
         if ($('#vva-chat-widget').length) {
-            new ValleyVirtualAssistant();
+            console.log('VVA: Widget found, initializing...');
+            try {
+                new ValleyVirtualAssistant();
+                console.log('VVA: Valley Virtual Assistant initialized successfully');
+            } catch (error) {
+                console.error('VVA: Failed to initialize:', error);
+            }
+        } else {
+            console.warn('VVA: Widget element not found in DOM');
         }
     });
 

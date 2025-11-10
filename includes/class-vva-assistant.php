@@ -174,11 +174,6 @@ Remember: Your goal is to make customers feel comfortable and confident in their
                 'temperature' => (float) get_option('vva_temperature', 0.7),
                 'maxOutputTokens' => (int) get_option('vva_max_tokens', 4096),
             ),
-            'systemInstruction' => array(
-                'parts' => array(
-                    array('text' => $this->system_prompt)
-                )
-            ),
         );
 
         // Make API request
@@ -302,6 +297,22 @@ Remember: Your goal is to make customers feel comfortable and confident in their
      */
     private function build_gemini_messages($user_message, $conversation_history, $context) {
         $contents = array();
+
+        // If this is the first message (no history), prepend system prompt
+        if (empty($conversation_history)) {
+            $contents[] = array(
+                'role' => 'user',
+                'parts' => array(
+                    array('text' => $this->system_prompt)
+                )
+            );
+            $contents[] = array(
+                'role' => 'model',
+                'parts' => array(
+                    array('text' => 'Understood. I am Sophie, your friendly virtual shopping assistant for Valley of the Dolls. I\'m here to help you find the perfect products confidently and professionally. How can I assist you today?')
+                )
+            );
+        }
 
         // Add conversation history
         foreach ($conversation_history as $message) {

@@ -554,6 +554,9 @@
                         console.log('VVA: [ADD TO CART] Cart count updated to:', response.data.cart_count);
                     }
 
+                    // VISUAL FEEDBACK: Make cart visible to customer
+                    this.showCartAddedFeedback(response.data);
+
                     // Reset button after 2 seconds
                     setTimeout(() => {
                         $button.html(originalHtml).removeClass('added').prop('disabled', false);
@@ -584,6 +587,79 @@
                     $button.html(originalHtml).removeClass('error').prop('disabled', false);
                 }, 3000);
             }
+        }
+
+        showCartAddedFeedback(data) {
+            console.log('VVA: [CART FEEDBACK] Showing visual feedback to customer');
+
+            // 1. Try to open mini-cart drawer (common theme patterns)
+            const cartSelectors = [
+                '.cart-contents',
+                '.header-cart',
+                '.mini-cart-trigger',
+                '.cart-trigger',
+                'a.cart-contents',
+                '.widget_shopping_cart'
+            ];
+
+            let cartOpened = false;
+            cartSelectors.forEach(selector => {
+                const $cart = $(selector);
+                if ($cart.length) {
+                    console.log('VVA: [CART FEEDBACK] Found cart element:', selector);
+                    $cart.trigger('click'); // Try to open it
+                    cartOpened = true;
+                }
+            });
+
+            // 2. Highlight/shake cart icon
+            const $cartIcon = $('.cart-contents, .header-cart, .mini-cart-trigger, .cart-trigger');
+            if ($cartIcon.length) {
+                console.log('VVA: [CART FEEDBACK] Highlighting cart icon');
+                $cartIcon.addClass('vva-cart-highlight');
+                setTimeout(() => {
+                    $cartIcon.removeClass('vva-cart-highlight');
+                }, 2000);
+            }
+
+            // 3. Show floating success notification
+            this.showCartNotification(data.product_name, data.cart_count);
+        }
+
+        showCartNotification(productName, cartCount) {
+            // Remove any existing notification
+            $('.vva-cart-notification').remove();
+
+            // Create notification
+            const $notification = $('<div>', {
+                class: 'vva-cart-notification',
+                html: `
+                    <div class="vva-cart-notification-icon">✓</div>
+                    <div class="vva-cart-notification-content">
+                        <strong>Added to cart!</strong>
+                        <p>${productName}</p>
+                        <small>Cart has ${cartCount} item${cartCount !== 1 ? 's' : ''}</small>
+                    </div>
+                `
+            });
+
+            // Append to body
+            $('body').append($notification);
+
+            console.log('VVA: [CART FEEDBACK] Showing notification for:', productName);
+
+            // Animate in
+            setTimeout(() => {
+                $notification.addClass('vva-cart-notification-show');
+            }, 100);
+
+            // Remove after 4 seconds
+            setTimeout(() => {
+                $notification.removeClass('vva-cart-notification-show');
+                setTimeout(() => {
+                    $notification.remove();
+                }, 300);
+            }, 4000);
         }
 
         extractButtons(content) {

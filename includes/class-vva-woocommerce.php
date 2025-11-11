@@ -154,41 +154,62 @@ class VVA_WooCommerce {
             return new WP_Error('invalid_product', __('Product not found.', 'valley-virtual-assistant'));
         }
 
-        // Get product image - use multiple fallback methods
+        // Get product image using WordPress/WooCommerce best practices
+        // Reference: WordPress.org - wp_get_attachment_url() and WooCommerce product image methods
         $image_id = $product->get_image_id();
         $image_url = '';
 
-        error_log('VVA: Product ' . $product->get_id() . ' (' . $product->get_name() . ') image ID: ' . ($image_id ?? 'NULL'));
+        error_log('VVA: Product ' . $product->get_id() . ' (' . $product->get_name() . ') image ID: ' . ($image_id ? $image_id : 'NULL'));
 
         if ($image_id) {
-            // Try thumbnail size first
-            $image_url = wp_get_attachment_image_url($image_id, 'woocommerce_thumbnail');
-            error_log('VVA: Thumbnail URL from wp_get_attachment_image_url: ' . ($image_url ?? 'NULL'));
+            // Method 1: Try wp_get_attachment_url (most reliable for full URL)
+            $image_url = wp_get_attachment_url($image_id);
+            error_log('VVA: wp_get_attachment_url result: ' . ($image_url ? $image_url : 'NULL'));
 
-            // Fallback to full size
+            // Method 2: If that fails, try wp_get_attachment_image_url with size
             if (!$image_url) {
-                $image_url = wp_get_attachment_url($image_id);
-                error_log('VVA: Full size URL from wp_get_attachment_url: ' . ($image_url ?? 'NULL'));
+                $image_url = wp_get_attachment_image_url($image_id, 'woocommerce_thumbnail');
+                error_log('VVA: wp_get_attachment_image_url (thumbnail) result: ' . ($image_url ? $image_url : 'NULL'));
+            }
+
+            // Method 3: Try medium size
+            if (!$image_url) {
+                $image_url = wp_get_attachment_image_url($image_id, 'medium');
+                error_log('VVA: wp_get_attachment_image_url (medium) result: ' . ($image_url ? $image_url : 'NULL'));
             }
 
             // Ensure URL is absolute (not relative)
             if ($image_url && !preg_match('/^https?:\/\//', $image_url)) {
-                $image_url = site_url($image_url);
+                $image_url = home_url($image_url);
                 error_log('VVA: Converted relative URL to absolute: ' . $image_url);
             }
+
+            // Verify the image file actually exists
+            if ($image_url) {
+                $attachment_metadata = wp_get_attachment_metadata($image_id);
+                if ($attachment_metadata === false) {
+                    error_log('VVA: WARNING - Image attachment metadata not found for ID: ' . $image_id);
+                } else {
+                    error_log('VVA: Image attachment metadata found: ' . print_r($attachment_metadata, true));
+                }
+            }
+        } else {
+            error_log('VVA: No featured image ID set for product ' . $product->get_id());
         }
 
         // Try getting image from product gallery as fallback
         if (!$image_url) {
             $gallery_ids = $product->get_gallery_image_ids();
+            error_log('VVA: Product has ' . count($gallery_ids) . ' gallery images');
+
             if (!empty($gallery_ids)) {
                 $first_gallery_id = $gallery_ids[0];
-                $image_url = wp_get_attachment_image_url($first_gallery_id, 'woocommerce_thumbnail');
-                error_log('VVA: Using first gallery image (ID: ' . $first_gallery_id . '): ' . ($image_url ?? 'NULL'));
+                $image_url = wp_get_attachment_url($first_gallery_id);
+                error_log('VVA: Using first gallery image (ID: ' . $first_gallery_id . '): ' . ($image_url ? $image_url : 'NULL'));
             }
         }
 
-        // Fallback to placeholder if no image found
+        // Fallback to WooCommerce placeholder if no image found
         if (!$image_url) {
             $image_url = wc_placeholder_img_src('woocommerce_thumbnail');
             error_log('VVA: No product image found, using WooCommerce placeholder: ' . $image_url);

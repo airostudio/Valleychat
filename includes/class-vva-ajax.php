@@ -33,9 +33,6 @@ class VVA_AJAX {
      * Constructor
      */
     private function __construct() {
-        // Ensure WooCommerce cart is loaded for AJAX requests
-        add_action('wp_loaded', array($this, 'ensure_wc_cart_loaded'));
-
         // Public AJAX actions (logged in and out)
         add_action('wp_ajax_vva_send_message', array($this, 'send_message'));
         add_action('wp_ajax_nopriv_vva_send_message', array($this, 'send_message'));
@@ -57,33 +54,47 @@ class VVA_AJAX {
     }
 
     /**
-     * Ensure WooCommerce cart is loaded for AJAX requests
+     * Ensure WooCommerce cart and session are properly initialized
+     * Based on WordPress.org WooCommerce documentation
      */
-    public function ensure_wc_cart_loaded() {
-        // Only for AJAX requests
-        if (!defined('DOING_AJAX') || !DOING_AJAX) {
-            return;
-        }
-
-        // Only for our add_to_cart action
-        $action = isset($_REQUEST['action']) ? sanitize_text_field($_REQUEST['action']) : '';
-        if ($action !== 'vva_add_to_cart') {
-            return;
-        }
-
+    private function ensure_cart_initialized() {
         // Ensure WooCommerce is loaded
-        if (!function_exists('WC') || !WC()) {
-            return;
+        if (!function_exists('WC')) {
+            error_log('VVA: WooCommerce not loaded');
+            return false;
         }
 
-        // Load cart functionality
+        // Load cart if not already loaded
         if (WC()->cart === null) {
-            WC()->frontend_includes();
-            WC()->session = new WC_Session_Handler();
-            WC()->session->init();
+            error_log('VVA: Cart is null, initializing...');
+
+            // Load WooCommerce frontend includes (cart, session, customer)
+            if (!WC()->frontend_includes) {
+                require_once WC_ABSPATH . 'includes/wc-cart-functions.php';
+                require_once WC_ABSPATH . 'includes/wc-notice-functions.php';
+            }
+
+            // Initialize session
+            if (WC()->session === null) {
+                $session_class = apply_filters('woocommerce_session_handler', 'WC_Session_Handler');
+                WC()->session = new $session_class();
+                WC()->session->init();
+                error_log('VVA: Session initialized');
+            }
+
+            // Initialize cart
             WC()->cart = new WC_Cart();
-            WC()->customer = new WC_Customer(get_current_user_id(), true);
+            error_log('VVA: Cart object created');
+
+            // Initialize customer
+            if (WC()->customer === null) {
+                WC()->customer = new WC_Customer(get_current_user_id(), true);
+                error_log('VVA: Customer initialized');
+            }
         }
+
+        error_log('VVA: Cart initialization complete. Cart exists: ' . (WC()->cart ? 'YES' : 'NO'));
+        return WC()->cart !== null;
     }
 
     /**
@@ -239,8 +250,11 @@ class VVA_AJAX {
 
     /**
      * Add product to cart (WooCommerce compatible)
+     * Based on WordPress.org WooCommerce AJAX add to cart documentation
      */
     public function add_to_cart() {
+        error_log('VVA: add_to_cart AJAX handler called');
+
         $this->verify_nonce();
 
         $product_id = isset($_POST['product_id']) ? absint($_POST['product_id']) : 0;
@@ -248,47 +262,53 @@ class VVA_AJAX {
         $variation_id = isset($_POST['variation_id']) ? absint($_POST['variation_id']) : 0;
         $variation = isset($_POST['variation']) ? (array) $_POST['variation'] : array();
 
+        error_log('VVA: Attempting to add product ' . $product_id . ' to cart, quantity: ' . $quantity);
+
         if (!$product_id) {
+            error_log('VVA: Invalid product ID');
             wp_send_json_error(array('message' => __('Invalid product ID.', 'valley-virtual-assistant')));
         }
 
         // Verify WooCommerce is active
         if (!function_exists('WC')) {
+            error_log('VVA: WooCommerce not active');
             wp_send_json_error(array('message' => __('WooCommerce is not active.', 'valley-virtual-assistant')));
+        }
+
+        // Ensure cart and session are initialized (critical for AJAX)
+        if (!$this->ensure_cart_initialized()) {
+            error_log('VVA: Failed to initialize cart');
+            wp_send_json_error(array('message' => __('Cart could not be initialized. Please refresh the page and try again.', 'valley-virtual-assistant')));
         }
 
         // Get product object
         $product = wc_get_product($product_id);
         if (!$product) {
+            error_log('VVA: Product not found: ' . $product_id);
             wp_send_json_error(array('message' => __('Product not found.', 'valley-virtual-assistant')));
         }
 
+        error_log('VVA: Product found: ' . $product->get_name() . ' (ID: ' . $product->get_id() . ')');
+
         // Check if product is in stock
         if (!$product->is_in_stock()) {
+            error_log('VVA: Product out of stock: ' . $product_id);
             wp_send_json_error(array('message' => __('Sorry, this product is currently out of stock.', 'valley-virtual-assistant')));
         }
 
         // Check if product is purchasable
         if (!$product->is_purchasable()) {
+            error_log('VVA: Product not purchasable: ' . $product_id);
             wp_send_json_error(array('message' => __('This product cannot be purchased.', 'valley-virtual-assistant')));
         }
 
-        // Verify cart is available - if not, try to initialize it
-        if (!WC()->cart) {
-            if (function_exists('wc_load_cart')) {
-                wc_load_cart();
-            }
-
-            if (!WC()->cart) {
-                error_log('VVA: WooCommerce cart not available during add_to_cart AJAX request');
-                wp_send_json_error(array('message' => __('Cart is not available. Please refresh the page and try again.', 'valley-virtual-assistant')));
-            }
-        }
-
-        // Add to cart
+        // Add to cart using WooCommerce method
+        error_log('VVA: Calling WC()->cart->add_to_cart()');
         $cart_item_key = WC()->cart->add_to_cart($product_id, $quantity, $variation_id, $variation);
 
         if ($cart_item_key) {
+            error_log('VVA: Product successfully added to cart. Cart item key: ' . $cart_item_key);
+
             // Track analytics
             VVA_Analytics::track_event('product_added_to_cart', array(
                 'product_id' => $product_id,
@@ -296,16 +316,14 @@ class VVA_AJAX {
                 'source' => 'virtual_assistant',
             ));
 
-            // Trigger WooCommerce added to cart action
+            // Trigger WooCommerce added to cart action (for themes/plugins)
             do_action('woocommerce_ajax_added_to_cart', $product_id);
 
-            // Get cart fragments for AJAX updates
-            if (function_exists('wc_cart_fragments') && class_exists('WC_AJAX')) {
-                WC_AJAX::get_refreshed_fragments();
-            }
+            // Get cart counts
+            $cart_count = WC()->cart->get_cart_contents_count();
+            $cart_total = WC()->cart->get_cart_total();
 
-            $cart_count = WC()->cart ? WC()->cart->get_cart_contents_count() : 0;
-            $cart_total = WC()->cart ? WC()->cart->get_cart_total() : '';
+            error_log('VVA: Cart count after add: ' . $cart_count);
 
             wp_send_json_success(array(
                 'message' => sprintf(__('%s has been added to your cart!', 'valley-virtual-assistant'), $product->get_name()),
@@ -315,7 +333,21 @@ class VVA_AJAX {
                 'product_name' => $product->get_name(),
             ));
         } else {
-            wp_send_json_error(array('message' => __('Failed to add product to cart. Please try again.', 'valley-virtual-assistant')));
+            error_log('VVA: Failed to add product to cart. Cart returned false/null');
+
+            // Check for WooCommerce notices/errors
+            $notices = wc_get_notices('error');
+            $error_message = __('Failed to add product to cart. Please try again.', 'valley-virtual-assistant');
+
+            if (!empty($notices)) {
+                error_log('VVA: WooCommerce errors: ' . print_r($notices, true));
+                $error_message = reset($notices);
+                if (is_array($error_message) && isset($error_message['notice'])) {
+                    $error_message = $error_message['notice'];
+                }
+            }
+
+            wp_send_json_error(array('message' => $error_message));
         }
     }
 

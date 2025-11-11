@@ -157,8 +157,8 @@ class VVA_AJAX {
         // Get conversation history
         $history = $this->get_conversation_history($conversation_id);
 
-        // Build context
-        $context = $this->build_context();
+        // Build context with product search
+        $context = $this->build_context($message);
 
         // Get AI response
         $assistant = VVA_Assistant::instance();
@@ -420,7 +420,7 @@ class VVA_AJAX {
     /**
      * Build context for AI
      */
-    private function build_context() {
+    private function build_context($user_message = '') {
         $context = array();
 
         // Add current product if on product page
@@ -429,6 +429,25 @@ class VVA_AJAX {
             if ($product) {
                 $wc = VVA_WooCommerce::instance();
                 $context['current_product'] = $wc->get_product_info($product->get_id());
+            }
+        }
+
+        // Search for relevant products based on user message
+        if (!empty($user_message)) {
+            $wc = VVA_WooCommerce::instance();
+
+            // Perform a broad search with the user's message
+            $search_results = $wc->search_products(array(
+                's' => $user_message,
+                'limit' => 10,
+                'in_stock' => true,
+            ));
+
+            if (!empty($search_results['products'])) {
+                $context['relevant_products'] = $search_results['products'];
+                error_log('VVA: Found ' . count($search_results['products']) . ' relevant products for: ' . $user_message);
+            } else {
+                error_log('VVA: No products found for search: ' . $user_message);
             }
         }
 

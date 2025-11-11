@@ -241,6 +241,31 @@ Remember: Your goal is to make customers feel comfortable and confident in their
             $formatted[] = "[Current Product Context]\n" . json_encode($context['current_product'], JSON_PRETTY_PRINT);
         }
 
+        // Add relevant products with clear formatting for AI
+        if (!empty($context['relevant_products'])) {
+            error_log('VVA: Formatting ' . count($context['relevant_products']) . ' relevant products for AI');
+
+            $products_info = "Available Products to Recommend (IMPORTANT: Use ONLY these real product IDs):\n\n";
+            foreach ($context['relevant_products'] as $product) {
+                $products_info .= "ID: {$product['id']} - {$product['name']}\n";
+                $products_info .= "  Price: \${$product['price']}\n";
+                if (!empty($product['categories'])) {
+                    $cats = array_map(function($cat) { return $cat['name']; }, $product['categories']);
+                    $products_info .= "  Categories: " . implode(', ', $cats) . "\n";
+                }
+                $products_info .= "  Stock: " . ($product['in_stock'] ? 'In Stock' : 'Out of Stock') . "\n";
+                if (!empty($product['short_description'])) {
+                    $products_info .= "  Description: " . wp_strip_all_tags($product['short_description']) . "\n";
+                }
+                $products_info .= "\n";
+            }
+            $formatted[] = $products_info;
+
+            error_log('VVA: Sample product IDs being sent to AI: ' . implode(', ', array_column(array_slice($context['relevant_products'], 0, 3), 'id')));
+        } else {
+            error_log('VVA: WARNING - No relevant products found to send to AI!');
+        }
+
         if (!empty($context['customer_orders'])) {
             $formatted[] = "[Customer Orders]\n" . json_encode($context['customer_orders'], JSON_PRETTY_PRINT);
         }
@@ -251,10 +276,6 @@ Remember: Your goal is to make customers feel comfortable and confident in their
 
         if (!empty($context['cart_items'])) {
             $formatted[] = "[Current Cart]\n" . json_encode($context['cart_items'], JSON_PRETTY_PRINT);
-        }
-
-        if (!empty($context['relevant_products'])) {
-            $formatted[] = "[Relevant Products Available]\n" . json_encode($context['relevant_products'], JSON_PRETTY_PRINT);
         }
 
         return !empty($formatted) ? "<context>\n" . implode("\n\n", $formatted) . "\n</context>" : '';

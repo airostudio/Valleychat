@@ -288,6 +288,11 @@
 
                 products.forEach(product => {
                     console.log('VVA: Processing product:', product);
+                    console.log('VVA: Product ID:', product.id, 'Name:', product.name);
+                    console.log('VVA: Product has image field?', 'image' in product);
+                    console.log('VVA: Product image value:', product.image);
+                    console.log('VVA: Product image type:', typeof product.image);
+
                     const $productCard = this.createProductCard(product);
                     $productsContainer.append($productCard);
                 });
@@ -361,19 +366,33 @@
             const $image = $('<div>', {
                 class: 'vva-product-image'
             });
+
+            console.log('VVA: [createProductCard] Checking image for product', product.id);
+            console.log('VVA: [createProductCard] product.image exists?', !!product.image);
+            console.log('VVA: [createProductCard] product.image value:', product.image);
+
             if (product.image) {
-                console.log('VVA: Product image URL:', product.image);
-                $image.append($('<img>', {
+                console.log('VVA: [createProductCard] Creating IMG element with src:', product.image);
+
+                const $img = $('<img>', {
                     src: product.image,
                     alt: product.name,
                     loading: 'lazy',
                     onerror: function() {
-                        console.error('VVA: Failed to load image:', product.image);
+                        console.error('VVA: [IMG LOAD ERROR] Failed to load image:', product.image);
+                        console.error('VVA: [IMG LOAD ERROR] This img element failed:', this);
                         $(this).attr('src', 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"%3E%3Crect fill="%23f0f0f0" width="200" height="200"/%3E%3Ctext x="50%25" y="50%25" text-anchor="middle" dy=".3em" fill="%23999" font-family="Arial" font-size="14"%3ENo Image%3C/text%3E%3C/svg%3E');
+                    },
+                    onload: function() {
+                        console.log('VVA: [IMG LOAD SUCCESS] Image loaded successfully:', product.image);
                     }
-                }));
+                });
+
+                $image.append($img);
+                console.log('VVA: [createProductCard] IMG element appended to image container');
             } else {
-                console.warn('VVA: No image URL for product:', product.id, product.name);
+                console.warn('VVA: [createProductCard] No image URL for product:', product.id, product.name);
+                console.warn('VVA: [createProductCard] Showing placeholder instead');
                 // Add placeholder
                 $image.html('<div class="vva-image-placeholder">No Image Available</div>');
             }

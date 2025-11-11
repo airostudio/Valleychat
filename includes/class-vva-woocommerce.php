@@ -158,25 +158,43 @@ class VVA_WooCommerce {
         $image_id = $product->get_image_id();
         $image_url = '';
 
-        error_log('VVA: Product ' . $product->get_id() . ' image ID: ' . ($image_id ?? 'NULL'));
+        error_log('VVA: Product ' . $product->get_id() . ' (' . $product->get_name() . ') image ID: ' . ($image_id ?? 'NULL'));
 
         if ($image_id) {
+            // Try thumbnail size first
             $image_url = wp_get_attachment_image_url($image_id, 'woocommerce_thumbnail');
-            error_log('VVA: Thumbnail URL: ' . ($image_url ?? 'NULL'));
+            error_log('VVA: Thumbnail URL from wp_get_attachment_image_url: ' . ($image_url ?? 'NULL'));
 
+            // Fallback to full size
             if (!$image_url) {
                 $image_url = wp_get_attachment_url($image_id);
-                error_log('VVA: Full size URL: ' . ($image_url ?? 'NULL'));
+                error_log('VVA: Full size URL from wp_get_attachment_url: ' . ($image_url ?? 'NULL'));
+            }
+
+            // Ensure URL is absolute (not relative)
+            if ($image_url && !preg_match('/^https?:\/\//', $image_url)) {
+                $image_url = site_url($image_url);
+                error_log('VVA: Converted relative URL to absolute: ' . $image_url);
+            }
+        }
+
+        // Try getting image from product gallery as fallback
+        if (!$image_url) {
+            $gallery_ids = $product->get_gallery_image_ids();
+            if (!empty($gallery_ids)) {
+                $first_gallery_id = $gallery_ids[0];
+                $image_url = wp_get_attachment_image_url($first_gallery_id, 'woocommerce_thumbnail');
+                error_log('VVA: Using first gallery image (ID: ' . $first_gallery_id . '): ' . ($image_url ?? 'NULL'));
             }
         }
 
         // Fallback to placeholder if no image found
         if (!$image_url) {
             $image_url = wc_placeholder_img_src('woocommerce_thumbnail');
-            error_log('VVA: Using placeholder: ' . $image_url);
+            error_log('VVA: No product image found, using WooCommerce placeholder: ' . $image_url);
         }
 
-        error_log('VVA: Final image URL for product ' . $product->get_id() . ': ' . $image_url);
+        error_log('VVA: FINAL image URL for product ' . $product->get_id() . ': ' . $image_url);
 
         $product_data = array(
             'id' => $product->get_id(),

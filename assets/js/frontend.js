@@ -357,7 +357,7 @@
                 'data-product-id': product.id
             });
 
-            // Product Image
+            // Product Image (Top)
             const $image = $('<div>', {
                 class: 'vva-product-image'
             });
@@ -366,6 +366,7 @@
                 $image.append($('<img>', {
                     src: product.image,
                     alt: product.name,
+                    loading: 'lazy',
                     onerror: function() {
                         console.error('VVA: Failed to load image:', product.image);
                         $(this).attr('src', 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"%3E%3Crect fill="%23f0f0f0" width="200" height="200"/%3E%3Ctext x="50%25" y="50%25" text-anchor="middle" dy=".3em" fill="%23999" font-family="Arial" font-size="14"%3ENo Image%3C/text%3E%3C/svg%3E');
@@ -374,11 +375,28 @@
             } else {
                 console.warn('VVA: No image URL for product:', product.id, product.name);
                 // Add placeholder
-                $image.html('<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:#999;font-size:14px;">No Image Available</div>');
+                $image.html('<div class="vva-image-placeholder">No Image Available</div>');
             }
             $card.append($image);
 
-            // Product Info
+            // Add to Cart Button (Prominent - below image)
+            const $addToCartBtn = $('<button>', {
+                class: 'vva-add-to-cart-btn vva-add-to-cart-primary',
+                html: product.in_stock ? '<span class="vva-cart-icon">🛒</span> Add to Cart' : 'Out of Stock',
+                disabled: !product.in_stock
+            });
+
+            if (product.in_stock) {
+                $addToCartBtn.on('click touchend', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    this.handleAddToCart(product.id, $addToCartBtn);
+                });
+            }
+
+            $card.append($addToCartBtn);
+
+            // Product Info (Name and Price)
             const $info = $('<div>', {
                 class: 'vva-product-info'
             });
@@ -413,41 +431,30 @@
 
             $card.append($info);
 
-            // Product Actions Container
-            const $actions = $('<div>', {
-                class: 'vva-product-actions'
-            });
-
-            // Add to Cart Button
-            const $button = $('<button>', {
-                class: 'vva-add-to-cart-btn',
-                text: product.in_stock ? 'Add to Cart' : 'Out of Stock',
-                disabled: !product.in_stock
-            });
-
-            if (product.in_stock) {
-                $button.on('click', () => this.handleAddToCart(product.id, $button));
+            // Product Description (Bottom)
+            if (product.short_description) {
+                const $description = $('<div>', {
+                    class: 'vva-product-description',
+                    html: product.short_description
+                });
+                $card.append($description);
             }
-
-            $actions.append($button);
 
             // View Product Link
             const $link = $('<a>', {
                 href: product.url,
                 class: 'vva-product-link',
-                text: 'View Details',
+                text: 'View Full Details',
                 target: '_blank'
             });
-            $actions.append($link);
-
-            $card.append($actions);
+            $card.append($link);
 
             return $card;
         }
 
         async handleAddToCart(productId, $button) {
-            const originalText = $button.text();
-            $button.prop('disabled', true).text('Adding...');
+            const originalHtml = $button.html();
+            $button.prop('disabled', true).html('<span class="vva-cart-icon">⏳</span> Adding...');
 
             console.log('VVA: Attempting to add product to cart:', productId);
 
@@ -466,33 +473,39 @@
                 console.log('VVA: Add to cart response:', response);
 
                 if (response.success) {
-                    $button.text('✓ Added!').addClass('added');
+                    $button.html('<span class="vva-cart-icon">✓</span> Added!').addClass('added');
 
                     // Show success message
                     this.addMessage('Great choice! I\'ve added that to your cart. ' + response.data.message, 'assistant');
 
+                    // Update cart count if element exists
+                    if (response.data.cart_count !== undefined) {
+                        $('.cart-contents-count, .cart-count').text(response.data.cart_count);
+                        console.log('VVA: Cart count updated to:', response.data.cart_count);
+                    }
+
                     // Reset button after 2 seconds
                     setTimeout(() => {
-                        $button.text(originalText).removeClass('added').prop('disabled', false);
+                        $button.html(originalHtml).removeClass('added').prop('disabled', false);
                     }, 2000);
                 } else {
                     console.error('VVA: Add to cart failed:', response.data);
-                    $button.text('Failed').addClass('error');
+                    $button.html('<span class="vva-cart-icon">✗</span> Failed').addClass('error');
                     const errorMsg = response.data && response.data.message ? response.data.message : 'Please try again.';
                     this.addMessage('Sorry, I couldn\'t add that to your cart. ' + errorMsg, 'assistant');
 
                     setTimeout(() => {
-                        $button.text(originalText).removeClass('error').prop('disabled', false);
-                    }, 2000);
+                        $button.html(originalHtml).removeClass('error').prop('disabled', false);
+                    }, 3000);
                 }
             } catch (error) {
                 console.error('VVA: Error adding to cart:', error);
-                $button.text('Error').addClass('error');
+                $button.html('<span class="vva-cart-icon">✗</span> Error').addClass('error');
                 this.addMessage('Sorry, something went wrong. Please try again.', 'assistant');
 
                 setTimeout(() => {
-                    $button.text(originalText).removeClass('error').prop('disabled', false);
-                }, 2000);
+                    $button.html(originalHtml).removeClass('error').prop('disabled', false);
+                }, 3000);
             }
         }
 

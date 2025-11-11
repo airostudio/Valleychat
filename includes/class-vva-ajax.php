@@ -528,6 +528,11 @@ class VVA_AJAX {
             }
 
             error_log('VVA: Returning ' . count($products) . ' products to frontend');
+
+            // Log detailed product data for debugging
+            foreach ($products as $idx => $product) {
+                error_log('VVA: Product #' . ($idx + 1) . ' - ID: ' . $product['id'] . ', Name: ' . $product['name'] . ', Image: ' . $product['image'] . ', Has description: ' . (!empty($product['short_description']) ? 'YES' : 'NO'));
+            }
         }
 
         return $products;

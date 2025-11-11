@@ -938,3 +938,109 @@
         max-width: 100%;
     }
 }
+
+/* ============================================
+   Cart Added Notification
+   ============================================ */
+
+.vva-cart-notification {
+    position: fixed;
+    top: 100px;
+    right: -400px;
+    width: 320px;
+    background: #fff;
+    border-left: 4px solid #4caf50;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    border-radius: 8px;
+    padding: 20px;
+    z-index: 999999;
+    display: flex;
+    gap: 15px;
+    align-items: flex-start;
+    transition: right 0.3s ease;
+}
+
+.vva-cart-notification-show {
+    right: 20px;
+}
+
+.vva-cart-notification-icon {
+    width: 40px;
+    height: 40px;
+    background: #4caf50;
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    flex-shrink: 0;
+}
+
+.vva-cart-notification-content {
+    flex: 1;
+}
+
+.vva-cart-notification-content strong {
+    display: block;
+    font-size: 16px;
+    margin-bottom: 5px;
+    color: #1d2327;
+}
+
+.vva-cart-notification-content p {
+    margin: 0 0 5px 0;
+    font-size: 14px;
+    color: #555;
+}
+
+.vva-cart-notification-content small {
+    font-size: 12px;
+    color: #999;
+}
+
+/* Cart Icon Highlight Animation */
+.vva-cart-highlight {
+    animation: vva-cart-shake 0.5s ease;
+    background: #4caf50 !important;
+    color: white !important;
+}
+
+@keyframes vva-cart-shake {
+    0%, 100% {
+        transform: translateX(0);
+    }
+    25% {
+        transform: translateX(-10px);
+    }
+    75% {
+        transform: translateX(10px);
+    }
+}
+
+/* Mobile Cart Notification */
+@media (max-width: 480px) {
+    .vva-cart-notification {
+        width: calc(100vw - 40px);
+        right: -100vw;
+        top: 80px;
+    }
+
+    .vva-cart-notification-show {
+        right: 20px;
+    }
+
+    .vva-cart-notification-icon {
+        width: 35px;
+        height: 35px;
+        font-size: 20px;
+    }
+
+    .vva-cart-notification-content strong {
+        font-size: 14px;
+    }
+
+    .vva-cart-notification-content p {
+        font-size: 13px;
+    }
+}

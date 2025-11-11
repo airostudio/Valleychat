@@ -109,6 +109,7 @@ final class Valley_Virtual_Assistant {
         if (is_admin()) {
             require_once VVA_PLUGIN_DIR . 'includes/admin/class-vva-admin.php';
             require_once VVA_PLUGIN_DIR . 'includes/admin/class-vva-settings.php';
+            require_once VVA_PLUGIN_DIR . 'includes/class-vva-diagnostics.php';
         }
     }
 
@@ -180,6 +181,7 @@ final class Valley_Virtual_Assistant {
             VVA_Admin::instance();
             VVA_Settings::instance();
             VVA_Analytics::instance();
+            VVA_Diagnostics::instance();
         }
     }
 

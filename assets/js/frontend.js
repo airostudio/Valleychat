@@ -374,21 +374,45 @@
             if (product.image) {
                 console.log('VVA: [createProductCard] Creating IMG element with src:', product.image);
 
-                const $img = $('<img>', {
-                    src: product.image,
-                    alt: product.name,
-                    loading: 'lazy',
-                    onerror: function() {
-                        console.error('VVA: [IMG LOAD ERROR] Failed to load image:', product.image);
-                        console.error('VVA: [IMG LOAD ERROR] This img element failed:', this);
-                        $(this).attr('src', 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"%3E%3Crect fill="%23f0f0f0" width="200" height="200"/%3E%3Ctext x="50%25" y="50%25" text-anchor="middle" dy=".3em" fill="%23999" font-family="Arial" font-size="14"%3ENo Image%3C/text%3E%3C/svg%3E');
-                    },
-                    onload: function() {
-                        console.log('VVA: [IMG LOAD SUCCESS] Image loaded successfully:', product.image);
-                    }
+                // Create img element using vanilla JS for better control (no lazy loading)
+                const img = document.createElement('img');
+                img.src = product.image;
+                img.alt = product.name || 'Product Image';
+                img.className = 'vva-product-img';
+
+                // Explicitly set styles to ensure visibility
+                img.style.width = '100%';
+                img.style.height = '100%';
+                img.style.objectFit = 'cover';
+                img.style.display = 'block';
+
+                // Add load event listener
+                img.addEventListener('load', function() {
+                    console.log('VVA: ✅ [IMG LOAD SUCCESS] Image loaded successfully:', product.image);
                 });
 
-                $image.append($img);
+                // Add error event listener with fallback
+                let errorCount = 0;
+                img.addEventListener('error', function() {
+                    errorCount++;
+                    console.error('VVA: ❌ [IMG LOAD ERROR] Failed to load image (attempt ' + errorCount + '):', product.image);
+
+                    if (errorCount === 1) {
+                        // Try removing any query strings first
+                        const cleanUrl = product.image.split('?')[0];
+                        if (cleanUrl !== product.image) {
+                            console.log('VVA: [IMG RETRY] Trying without query string:', cleanUrl);
+                            this.src = cleanUrl;
+                            return;
+                        }
+                    }
+
+                    // Use placeholder SVG as final fallback
+                    console.log('VVA: [IMG FALLBACK] Using placeholder SVG');
+                    this.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"%3E%3Crect fill="%23f0f0f0" width="200" height="200"/%3E%3Ctext x="50%25" y="50%25" text-anchor="middle" dy=".3em" fill="%23999" font-family="Arial" font-size="14"%3ENo Image%3C/text%3E%3C/svg%3E';
+                });
+
+                $image.append(img);
                 console.log('VVA: [createProductCard] IMG element appended to image container');
             } else {
                 console.warn('VVA: [createProductCard] No image URL for product:', product.id, product.name);

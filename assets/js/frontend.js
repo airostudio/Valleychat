@@ -12,6 +12,9 @@
     }
 
     console.log('VVA: Initializing Valley Virtual Assistant...');
+    console.log('VVA: User Agent:', navigator.userAgent);
+    console.log('VVA: Screen size:', window.innerWidth + 'x' + window.innerHeight);
+    console.log('VVA: Touch support:', 'ontouchstart' in window);
 
     // Valley Virtual Assistant Class
     class ValleyVirtualAssistant {
@@ -56,9 +59,20 @@
         }
 
         bindEvents() {
-            // Toggle chat window
-            this.$toggle.on('click', () => this.toggleChat());
-            this.$minimize.on('click', () => this.closeChat());
+            console.log('VVA: Binding events to toggle button');
+
+            // Toggle chat window - use both click and touchend for mobile
+            this.$toggle.on('click touchend', (e) => {
+                e.preventDefault();
+                console.log('VVA: Toggle button clicked/touched');
+                this.toggleChat();
+            });
+
+            this.$minimize.on('click touchend', (e) => {
+                e.preventDefault();
+                console.log('VVA: Minimize button clicked');
+                this.closeChat();
+            });
 
             // Age verification
             this.$confirmAge.on('click', () => this.confirmAge());

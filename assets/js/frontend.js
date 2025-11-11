@@ -499,9 +499,14 @@
             const originalHtml = $button.html();
             $button.prop('disabled', true).html('<span class="vva-cart-icon">⏳</span> Adding...');
 
-            console.log('VVA: Attempting to add product to cart:', productId);
+            console.log('VVA: [ADD TO CART] Starting add to cart process');
+            console.log('VVA: [ADD TO CART] Product ID:', productId);
+            console.log('VVA: [ADD TO CART] AJAX URL:', vvaData.ajaxUrl);
+            console.log('VVA: [ADD TO CART] Nonce:', vvaData.nonce ? 'Present' : 'MISSING');
 
             try {
+                console.log('VVA: [ADD TO CART] Sending AJAX request...');
+
                 const response = await $.ajax({
                     url: vvaData.ajaxUrl,
                     type: 'POST',
@@ -513,9 +518,12 @@
                     }
                 });
 
-                console.log('VVA: Add to cart response:', response);
+                console.log('VVA: [ADD TO CART] ✅ AJAX response received:', response);
 
                 if (response.success) {
+                    console.log('VVA: [ADD TO CART] ✅ SUCCESS - Product added to cart');
+                    console.log('VVA: [ADD TO CART] Response data:', response.data);
+
                     $button.html('<span class="vva-cart-icon">✓</span> Added!').addClass('added');
 
                     // Show success message
@@ -524,7 +532,7 @@
                     // Update cart count if element exists
                     if (response.data.cart_count !== undefined) {
                         $('.cart-contents-count, .cart-count').text(response.data.cart_count);
-                        console.log('VVA: Cart count updated to:', response.data.cart_count);
+                        console.log('VVA: [ADD TO CART] Cart count updated to:', response.data.cart_count);
                     }
 
                     // Reset button after 2 seconds
@@ -532,7 +540,9 @@
                         $button.html(originalHtml).removeClass('added').prop('disabled', false);
                     }, 2000);
                 } else {
-                    console.error('VVA: Add to cart failed:', response.data);
+                    console.error('VVA: [ADD TO CART] ❌ FAILED - Response not successful');
+                    console.error('VVA: [ADD TO CART] Error data:', response.data);
+
                     $button.html('<span class="vva-cart-icon">✗</span> Failed').addClass('error');
                     const errorMsg = response.data && response.data.message ? response.data.message : 'Please try again.';
                     this.addMessage('Sorry, I couldn\'t add that to your cart. ' + errorMsg, 'assistant');
@@ -542,7 +552,12 @@
                     }, 3000);
                 }
             } catch (error) {
-                console.error('VVA: Error adding to cart:', error);
+                console.error('VVA: [ADD TO CART] ❌ EXCEPTION - AJAX request failed');
+                console.error('VVA: [ADD TO CART] Error object:', error);
+                console.error('VVA: [ADD TO CART] Error status:', error.status);
+                console.error('VVA: [ADD TO CART] Error text:', error.statusText);
+                console.error('VVA: [ADD TO CART] Response text:', error.responseText);
+
                 $button.html('<span class="vva-cart-icon">✗</span> Error').addClass('error');
                 this.addMessage('Sorry, something went wrong. Please try again.', 'assistant');
 

@@ -469,15 +469,26 @@ class VVA_AJAX {
             $wc = VVA_WooCommerce::instance();
 
             // Perform a broad search with the user's message
+            // NOTE: Don't filter by stock status - let AI see ALL products and their stock status
+            // This way AI can inform user about out-of-stock items instead of saying nothing is available
             $search_results = $wc->search_products(array(
                 's' => $user_message,
                 'limit' => 10,
-                'in_stock' => true,
+                'in_stock' => false, // Changed to false - get ALL products regardless of stock
             ));
 
             if (!empty($search_results['products'])) {
                 $context['relevant_products'] = $search_results['products'];
-                error_log('VVA: Found ' . count($search_results['products']) . ' relevant products for: ' . $user_message);
+
+                // Count how many are in stock
+                $in_stock_count = 0;
+                foreach ($search_results['products'] as $prod) {
+                    if ($prod['in_stock']) {
+                        $in_stock_count++;
+                    }
+                }
+
+                error_log('VVA: Found ' . count($search_results['products']) . ' relevant products for: ' . $user_message . ' (' . $in_stock_count . ' in stock)');
             } else {
                 error_log('VVA: No products found for search: ' . $user_message);
             }

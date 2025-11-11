@@ -67,7 +67,7 @@ class VVA_Diagnostics {
             $search_results = $wc->search_products(array(
                 's' => $test_search,
                 'limit' => 10,
-                'in_stock' => true,
+                'in_stock' => false, // Show ALL products to help diagnose stock issues
             ));
         }
 

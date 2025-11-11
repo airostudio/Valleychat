@@ -307,16 +307,23 @@ class VVA_WooCommerce {
             );
         }
 
-        // Stock status
-        if ($args['in_stock']) {
+        // Stock status filter - only apply if explicitly requested
+        // When in_stock is true, we'll double-check stock status after query
+        // When in_stock is false or null, we return ALL products regardless of stock
+        if ($args['in_stock'] === true) {
             $query_args['meta_query'][] = array(
                 'key' => '_stock_status',
                 'value' => 'instock',
+                'compare' => '=',
             );
         }
 
+        error_log('VVA: Product search query args: ' . print_r($query_args, true));
+
         $products_query = new WP_Query($query_args);
         $products = array();
+
+        error_log('VVA: Product search found ' . $products_query->found_posts . ' posts');
 
         if ($products_query->have_posts()) {
             while ($products_query->have_posts()) {
@@ -325,27 +332,56 @@ class VVA_WooCommerce {
                 $product = wc_get_product($product_id);
 
                 if ($product) {
-                    // Get product image with fallback
+                    // Double-check stock status only if we explicitly want in-stock items
+                    if ($args['in_stock'] === true && !$product->is_in_stock()) {
+                        error_log('VVA: Skipping product ' . $product_id . ' - not in stock (filtered out)');
+                        continue;
+                    }
+
+                    // Use the same robust image retrieval method as get_product_info
                     $image_id = $product->get_image_id();
                     $image_url = '';
+
                     if ($image_id) {
-                        $image_url = wp_get_attachment_image_url($image_id, 'woocommerce_thumbnail');
+                        // Method 1: wp_get_attachment_url (most reliable)
+                        $image_url = wp_get_attachment_url($image_id);
+
+                        // Method 2: Try with size parameter
                         if (!$image_url) {
-                            $image_url = wp_get_attachment_url($image_id);
+                            $image_url = wp_get_attachment_image_url($image_id, 'woocommerce_thumbnail');
+                        }
+
+                        // Method 3: Try medium size
+                        if (!$image_url) {
+                            $image_url = wp_get_attachment_image_url($image_id, 'medium');
                         }
                     }
+
+                    // Fallback to gallery images
+                    if (!$image_url) {
+                        $gallery_ids = $product->get_gallery_image_ids();
+                        if (!empty($gallery_ids)) {
+                            $image_url = wp_get_attachment_url($gallery_ids[0]);
+                        }
+                    }
+
+                    // Final fallback to placeholder
                     if (!$image_url) {
                         $image_url = wc_placeholder_img_src('woocommerce_thumbnail');
                     }
+
+                    error_log('VVA: Adding product to search results: ' . $product->get_name() . ' (ID: ' . $product_id . ', In Stock: ' . ($product->is_in_stock() ? 'YES' : 'NO') . ', Image: ' . ($image_url ? 'YES' : 'NO') . ')');
 
                     $products[] = array(
                         'id' => $product->get_id(),
                         'name' => $product->get_name(),
                         'price' => $product->get_price(),
+                        'regular_price' => $product->get_regular_price(),
                         'sale_price' => $product->get_sale_price(),
                         'on_sale' => $product->is_on_sale(),
                         'stock_status' => $product->get_stock_status(),
-                        'short_description' => wp_trim_words($product->get_short_description(), 20),
+                        'in_stock' => $product->is_in_stock(), // CRITICAL: This was missing!
+                        'short_description' => $product->get_short_description(),
                         'categories' => $this->get_product_categories($product),
                         'url' => $product->get_permalink(),
                         'image' => $image_url,
@@ -355,9 +391,11 @@ class VVA_WooCommerce {
             wp_reset_postdata();
         }
 
+        error_log('VVA: Product search returning ' . count($products) . ' products');
+
         return array(
             'products' => $products,
-            'total' => $products_query->found_posts,
+            'total' => count($products), // Return actual filtered count, not query count
             'query' => $args,
         );
     }

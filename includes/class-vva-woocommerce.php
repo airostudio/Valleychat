@@ -158,17 +158,25 @@ class VVA_WooCommerce {
         $image_id = $product->get_image_id();
         $image_url = '';
 
+        error_log('VVA: Product ' . $product->get_id() . ' image ID: ' . ($image_id ?? 'NULL'));
+
         if ($image_id) {
             $image_url = wp_get_attachment_image_url($image_id, 'woocommerce_thumbnail');
+            error_log('VVA: Thumbnail URL: ' . ($image_url ?? 'NULL'));
+
             if (!$image_url) {
                 $image_url = wp_get_attachment_url($image_id);
+                error_log('VVA: Full size URL: ' . ($image_url ?? 'NULL'));
             }
         }
 
         // Fallback to placeholder if no image found
         if (!$image_url) {
             $image_url = wc_placeholder_img_src('woocommerce_thumbnail');
+            error_log('VVA: Using placeholder: ' . $image_url);
         }
+
+        error_log('VVA: Final image URL for product ' . $product->get_id() . ': ' . $image_url);
 
         $product_data = array(
             'id' => $product->get_id(),

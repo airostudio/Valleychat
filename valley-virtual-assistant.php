@@ -70,6 +70,7 @@ final class Valley_Virtual_Assistant {
         add_action('init', array($this, 'init'), 0);
         add_action('wp_enqueue_scripts', array($this, 'enqueue_frontend_assets'));
         add_action('admin_enqueue_scripts', array($this, 'enqueue_admin_assets'));
+        add_action('admin_notices', array($this, 'cache_clear_notice'));
 
         // WooCommerce cart fragments support
         add_filter('woocommerce_add_to_cart_fragments', array($this, 'cart_fragments'));
@@ -235,6 +236,38 @@ final class Valley_Virtual_Assistant {
      */
     public function exclude_from_autoptimize($exclude) {
         return $exclude . ', vva-frontend, valley-virtual-assistant';
+    }
+
+    /**
+     * Show admin notice to clear cache
+     */
+    public function cache_clear_notice() {
+        // Only show to admins
+        if (!current_user_can('manage_options')) {
+            return;
+        }
+
+        // Check if we've shown this notice for current version
+        $dismissed = get_transient('vva_cache_notice_dismissed_' . VVA_VERSION);
+        if ($dismissed) {
+            return;
+        }
+
+        // Allow dismissal
+        if (isset($_GET['vva_dismiss_cache_notice'])) {
+            set_transient('vva_cache_notice_dismissed_' . VVA_VERSION, true, WEEK_IN_SECONDS);
+            return;
+        }
+
+        $dismiss_url = add_query_arg('vva_dismiss_cache_notice', '1');
+
+        ?>
+        <div class="notice notice-warning is-dismissible">
+            <p><strong>Valley Virtual Assistant:</strong> Mobile JavaScript fixes have been applied.
+            If the chatbot doesn't work on mobile, please <strong>clear your WP Optimize cache</strong> or any other caching plugin cache.</p>
+            <p><a href="<?php echo esc_url($dismiss_url); ?>" class="button button-small">Dismiss</a></p>
+        </div>
+        <?php
     }
 
     /**

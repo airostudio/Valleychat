@@ -482,10 +482,14 @@ class VVA_AJAX {
             $product_ids = $matches[1];
             $wc = VVA_WooCommerce::instance();
 
+            error_log('VVA: Extracting products from message, found IDs: ' . implode(', ', $product_ids));
+
             foreach ($product_ids as $product_id) {
                 $product_data = $wc->get_product_info((int) $product_id);
 
                 if (!is_wp_error($product_data)) {
+                    error_log('VVA: Product ' . $product_id . ' image URL: ' . ($product_data['image'] ?? 'NULL'));
+
                     $products[] = array(
                         'id' => $product_data['id'],
                         'name' => $product_data['name'],
@@ -499,8 +503,12 @@ class VVA_AJAX {
                         'image' => $product_data['image'],
                         'short_description' => $product_data['short_description'],
                     );
+                } else {
+                    error_log('VVA: Failed to get product data for ID ' . $product_id . ': ' . $product_data->get_error_message());
                 }
             }
+
+            error_log('VVA: Returning ' . count($products) . ' products to frontend');
         }
 
         return $products;

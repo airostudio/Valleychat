@@ -325,12 +325,30 @@ class VVA_AJAX {
 
             error_log('VVA: Cart count after add: ' . $cart_count);
 
+            // Get WooCommerce cart fragments for frontend updates
+            $fragments = array();
+            if (function_exists('wc_cart_fragments')) {
+                ob_start();
+                woocommerce_mini_cart();
+                $mini_cart = ob_get_clean();
+
+                $fragments['div.widget_shopping_cart_content'] = '<div class="widget_shopping_cart_content">' . $mini_cart . '</div>';
+                $fragments['.cart-contents-count'] = $cart_count;
+                $fragments['.cart-count'] = $cart_count;
+
+                // Apply WooCommerce fragments filter
+                $fragments = apply_filters('woocommerce_add_to_cart_fragments', $fragments);
+
+                error_log('VVA: Cart fragments generated: ' . count($fragments) . ' fragments');
+            }
+
             wp_send_json_success(array(
                 'message' => sprintf(__('%s has been added to your cart!', 'valley-virtual-assistant'), $product->get_name()),
                 'cart_count' => $cart_count,
                 'cart_total' => $cart_total,
                 'cart_url' => wc_get_cart_url(),
                 'product_name' => $product->get_name(),
+                'fragments' => $fragments, // Add fragments for theme cart updates
             ));
         } else {
             error_log('VVA: Failed to add product to cart. Cart returned false/null');

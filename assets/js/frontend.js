@@ -529,9 +529,28 @@
                     // Show success message
                     this.addMessage('Great choice! I\'ve added that to your cart. ' + response.data.message, 'assistant');
 
+                    // Update cart fragments (WooCommerce standard method)
+                    if (response.data.fragments) {
+                        console.log('VVA: [ADD TO CART] Updating cart fragments:', response.data.fragments);
+
+                        // Update each fragment in the DOM
+                        $.each(response.data.fragments, function(key, value) {
+                            console.log('VVA: [ADD TO CART] Updating fragment:', key);
+                            $(key).replaceWith(value);
+                        });
+
+                        // Trigger WooCommerce cart updated events
+                        $(document.body).trigger('wc_fragment_refresh');
+                        $(document.body).trigger('wc_fragments_refreshed');
+                        $(document.body).trigger('added_to_cart', [response.data.fragments, '', $button]);
+
+                        console.log('VVA: [ADD TO CART] ✅ WooCommerce cart events triggered');
+                    }
+
                     // Update cart count if element exists
                     if (response.data.cart_count !== undefined) {
                         $('.cart-contents-count, .cart-count').text(response.data.cart_count);
+                        $('.cart-contents-count, .cart-count').html(response.data.cart_count);
                         console.log('VVA: [ADD TO CART] Cart count updated to:', response.data.cart_count);
                     }
 

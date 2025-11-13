@@ -554,6 +554,9 @@
                         console.log('VVA: [ADD TO CART] Cart count updated to:', response.data.cart_count);
                     }
 
+                    // FORCE cart refresh using WooCommerce's native system
+                    this.refreshCartFragments();
+
                     // VISUAL FEEDBACK: Make cart visible to customer
                     this.showCartAddedFeedback(response.data);
 
@@ -660,6 +663,54 @@
                     $notification.remove();
                 }, 300);
             }, 4000);
+        }
+
+        refreshCartFragments() {
+            console.log('VVA: [CART REFRESH] Forcing cart fragments refresh...');
+
+            // Use WooCommerce's native cart fragments refresh
+            if (typeof wc_cart_fragments_params !== 'undefined') {
+                // Method 1: Use WooCommerce's built-in AJAX endpoint
+                $.ajax({
+                    url: wc_cart_fragments_params.wc_ajax_url.toString().replace('%%endpoint%%', 'get_refreshed_fragments'),
+                    type: 'POST',
+                    success: function(data) {
+                        if (data && data.fragments) {
+                            console.log('VVA: [CART REFRESH] ✅ Received fresh fragments:', data.fragments);
+
+                            $.each(data.fragments, function(key, value) {
+                                $(key).replaceWith(value);
+                            });
+
+                            $(document.body).trigger('wc_fragments_refreshed');
+                            console.log('VVA: [CART REFRESH] ✅ Cart widgets updated');
+                        }
+                    },
+                    error: function(error) {
+                        console.error('VVA: [CART REFRESH] ❌ Failed to refresh fragments:', error);
+                    }
+                });
+            } else {
+                // Method 2: Fallback - trigger standard WooCommerce refresh event
+                console.log('VVA: [CART REFRESH] Using fallback method (triggering wc_fragment_refresh)');
+                $(document.body).trigger('wc_fragment_refresh');
+            }
+
+            // Method 3: Also update mini-cart if it's a widget
+            if (typeof $.fn.block !== 'undefined') {
+                $('.widget_shopping_cart_content').block({
+                    message: null,
+                    overlayCSS: {
+                        background: '#fff',
+                        opacity: 0.6
+                    }
+                });
+
+                // Unblock after refresh completes
+                setTimeout(() => {
+                    $('.widget_shopping_cart_content').unblock();
+                }, 500);
+            }
         }
 
         extractButtons(content) {
